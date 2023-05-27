@@ -10,6 +10,7 @@ POSTS_PER_PAGE = 10
 POSTS_PER_PAGE_ATOM = 10
 
 POSTS = \
+	swift-ecp-programming-2 \
 	swift-ecp-programming-1 \
 	rust-chip8 \
 	ports-reading-docs \

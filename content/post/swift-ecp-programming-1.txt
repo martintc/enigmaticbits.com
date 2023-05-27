@@ -4,7 +4,7 @@ DATE: 2023-05-22 19:42:16
 
 # Introduction
 
-Here recently, I have taken to dabble in swift a little bit. A little bit of a shout out to [Hacking With Swift](https://www.hackingwithswift.com/) for some great tutorials to get started with swift. This came about with my recently acquiring an Apple watch SE. I figured, I had a M1 Macbook Air, I might as well play around in the ecosystem some. One thing I've ran into recently with as a headache is dealing with my Roku. Great little devices, but with small kids, I always seem to permanently loose the Roku remote. So we started using the Roku app on our phones in lieu. However, the app is rather clunky and a pain to deal with. However, I found some neat [documentation](https://developer.roku.com/docs/developer-program/dev-tools/external-control-api.md) on how to interact with the Rokue with my own code.
+Here recently, I have taken to dabble in swift a little bit. A little bit of a shout out to [Hacking With Swift](https://www.hackingwithswift.com/) for some great tutorials to get started with swift. This came about with my recently acquiring an Apple watch SE. I figured, I had a M1 Macbook Air, I might as well play around in the ecosystem some. One thing I've ran into recently as a headache is dealing with my Roku. Great little devices, but with small kids, I always seem to permanently loose the Roku remote. So we started using the Roku app on our phones in lieu. However, the app is rather clunky and a pain to deal with. However, I found some neat [documentation](https://developer.roku.com/docs/developer-program/dev-tools/external-control-api.md) on how to interact with the Rokue with my own code.
 
 # Simple Service Discovery Protocol
 

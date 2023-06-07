@@ -1,0 +1,102 @@
+TITLE: Swift On Linux (2023)
+DATE: 2023-05-23
+-------------------------
+
+# Introduction
+
+As seen from previous posts, I have taken to dabbling with Swift on my M1 MacBook Air running MacOS. Now, it is time to take a look at how swift does on Linux. I believe Swift is an interesting language that can bring a rather unique value proposition. As someone who has written Rust for open sourced projects and professionally (for a paycheck) C#, Swift strikes a really interesting balance. In Rust, I sometimes end up at a point where I am tackling a problem and I am thinking to myself, "if only I had X from C# to do this." And likewise, in C# (especailly when it comes to errors and enums), I hit a situation where I look at something and go, "if I only I had Y from Rust." Swift, seems to be able to strike that balance some. It has the features of C# I want while also have quiet a few (not all) of the features of Rust I want. So I tend to describe it as, it is a perfect middle ground (or at least the best middel ground present) between C# and Rust.
+
+# Creating an initial project on Linux
+
+My main linux machine right now is running Fedora 37. Swift has been in the main repositories of Fedora for awhile. So getting Swift 5.8 was as simple as invoking the package manager.
+
+```
+sudo dnf install swift
+``
+
+Now, with the basic tool chain installed, it is time to get to work. I create a work space, which was just a folder called "Hello." Navigating inside of that folder, time to invoke swift to create the project essentially.
+
+```
+swift package init --type executable
+```
+
+This is just to create a simple executable package. Which gives me a little folder structure and a `main.swift` file.
+
+```
+// The Swift Programming Language
+// https://docs.swift.org/swift-book
+
+print("Hello, world!")
+```
+
+Just a simple hello world. First, to see if it actually works.
+
+```
+swift build
+```
+
+Okay, it compiles fine apparently. Now, how about running?
+
+```
+swift run
+```
+
+Look like it can at least run a hello world.
+
+```
+╭─todd@fedora ~/Learning/Swift/Hello 
+╰─$ swift run
+warning: 'hello': warning: direct reference to protected function `$sSJ12isWhitespaceSbvg' in `/usr/libexec/swift/5.8/bin/../lib/swift/linux/libswiftCore.so' may break pointer equality
+Building for debugging...
+Build complete! (0.08s)
+Hello, world!
+```
+Looks like we have lift off.
+
+# Package.swift
+
+Creating the project also gives us a `Package.swift` file. Which, at least shown what we are given, defines some simple things about the package. This is also, I believe, how 3rd party packages can be pulled in. From my understanding, you can do something like define dependencies by linking to their git repos and even specify a release from the repo and during the build phase, it will pull in the code and compile it with the application. Like with all good Linux applications, we need a command line interface, so I will use this as an opportunity to try this out.
+
+There is a library, apparently from a google employee, that help provides a nice way to help build a command line driven program called [CommandlineKit](https://github.com/objecthub/swift-commandlinekit). Unfortunatley, the github repo also appears to make mention of Swift 5.5, but lets hope versioning is on my side here. The current version Fedora has is 5.8 (5.9 should be out with WWDC just happening). So, lets hope it is compatible.
+
+```
+// swift-tools-version: 5.8
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
+import PackageDescription
+
+let package = Package(
+    name: "Hello",
+    dependencies: [
+        .package(url: "https://github.com/jordanbaird/Prism", from: "0.1.2"),
+    ],
+    targets: [
+        // Targets are the basic building blocks of a package, defining a module or a test suite.
+        // Targets can depend on other targets in this package and products from dependencies.
+        .executableTarget(
+            name: "Hello",
+            dependencies: ["Prism"],
+            path: "Sources"),
+    ]
+)
+```
+
+Alright, so far, I am impressed. When I first looked at this file, I didn't pay much attention to it, but adding a dependency made me actually look at it and see something here. This file defines the package, duh. However, the package is just defined like a *struct* in Swift. I like this a lot. When the build system is essentially written in the language itself. This is something zig does with *zig.build*. Rust does have a *build.rs* but you still have a *Cargo.toml* file, which is good, but its not optimal. C# has solution and csproj files which are XML/XAML/XML-like (YUK!).
+
+I think coloring can look pretty good for a command line utility, so Prism is a nice package that looks like it can give some coloring.
+
+```
+// The Swift Programming Language
+// https://docs.swift.org/swift-book
+
+import Prism
+
+let text = Prism(spacing: .spaces) {
+    ForegroundColor(.green, "This text's color is green")
+}
+
+print(text)
+```
+
+It does indeed print the text as green.
+

@@ -39,7 +39,7 @@ Look like it can at least run a hello world.
   Building for debugging...
   Build complete! (0.08s)
   Hello, world!
-  ```
+
 Looks like we have lift off.
 
 # Package.swift

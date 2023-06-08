@@ -225,7 +225,6 @@ Here is the code
         guard let data = data, error == nil else {
             fatalError(error!.localizedDescription)
         }
-
         print("Error: \(String(describing: response))")
         print("Fetched data size: \(data)")
         semaphore.signal()

@@ -10,6 +10,7 @@ POSTS_PER_PAGE = 10
 POSTS_PER_PAGE_ATOM = 10
 
 POSTS = \
+	terminal-drawing-with-swift \
 	swift-on-linux \
 	swift-ecp-programming-2 \
 	swift-ecp-programming-1 \

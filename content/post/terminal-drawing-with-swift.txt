@@ -26,7 +26,7 @@ Here is what I get after running my code in the terminal. Only this.
   ┃                   ┃
   ┗━━━━━━━━━━━━━━━━━━━┛
 
- A simple box, but it takes a bit of code to get there, so lets jump in.
+A simple box, but it takes a bit of code to get there, so lets jump in.
 
 First things first, it is better to work off of the FreeBSD documentation or using the man page in macOS, which is essentially the FreeBSD man page. Online, the documentation apple gives is can be found [here](https://developer.apple.com/documentation/kernel/termios). It doesn't tell me too much other than the termios structure is rather accessible to me without any weird imports. Importing the Foundation should be good enough.
 

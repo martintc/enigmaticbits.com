@@ -1,0 +1,57 @@
+---
+import '../styles/global.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EmploymentHistory from '../components/EmploymentHistory.astro';
+
+const pageTitle = "About Me";
+
+const identity = {
+    firstName: "Todd",
+    country: "USA",
+    occupation: "Software Engineer"
+};
+
+const employmentHistory = [
+    {
+        employerName: "Paladin Data Corporation",
+        startDate: "2022-05-02",
+        endDate: "Current",
+        role: "Software Engineer"
+    },
+    {
+        employerName: "Suterra LLC.",
+        startDate: "2018-05-20",
+        endDate: "2022-04-20",
+        role: "Chemical Systems Technician"
+    },
+    {
+        employerName: "US Navy",
+        startDate: "2013-05-20",
+        endDate: "2018-05-20",
+        role: "ABF3"
+    }
+]
+
+const skills = ["Rust", "Swift", "C#", "Postgres"]
+
+const skillColor = "navy";
+---
+
+<BaseLayout pageTitle={pageTitle}>
+        <p>Here a few facts about me:</p>
+        <ul>
+            <li>My name is {identity.firstName}</li>
+            <li>I live in {identity.country} and I work as a {identity.occupation}.</li>
+        </ul>
+        <br />
+        <p>Employment History</p>
+        <ul>
+            {employmentHistory.map((employer) => <li class="employer"><EmploymentHistory employerName={employer.employerName} startDate={employer.startDate} endDate={employer.endDate} role={employer.role}/></li>)}
+        </ul>
+        <br />
+        <p>My skills are:</p>
+        <ul>
+            {skills.map((skill) => <li class="skill">{skill}</li>)}
+        </ul>
+
+</BaseLayout>

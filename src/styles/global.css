@@ -1,0 +1,138 @@
+html {
+    background-color: #2e3440;
+    font-family: sans-serif;
+    margin-top: 20px;
+    margin-right: 20px;
+    margin-left: 20px;
+    margin-bottom: 20px;
+  }
+
+  header {
+    background-color: #434c5e;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+  }
+
+  footer {
+    background-color: #434c5e;
+    border-radius: 25px;
+  }
+
+  footer a:hover,
+  footer a:focus {
+    background-color: #81a1c1;
+    border-radius: 25px;
+  }
+  
+  body {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 80ch;
+    padding: 1rem;
+    line-height: 1.5;
+    color: #d8dee9;
+    background-color: #4c566a;
+    border-radius: 25px;
+  }
+
+  .body-content {
+    padding: 20px;
+  }
+
+  .body-content ul {
+    margin-left: 30px;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  h1 {
+    margin: 1rem 0;
+    font-size: 2.5rem;
+    color: #d8dee9;
+  }
+
+  ul {
+    list-style: circle;
+  }
+
+  /* blog links styles */
+
+  .blog-links a {
+    color: #ebcb8b;
+  }
+  
+  .blog-links li {
+    list-style: circle;
+  }
+
+  /* nav styles */
+
+  .hamburger {
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    cursor: pointer;
+  }
+  
+  .hamburger .line {
+    display: block;
+    width: 30px;
+    height: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: #eceff4;
+  }
+  
+  .nav-links {
+    width: 100%;
+    top: 5rem;
+    left: 48px;
+    background-color: #a09c96;
+    display: none;
+    margin: 0;
+    color: #d8dee9;
+  }
+  
+  .nav-links a {
+    display: block;
+    text-align: center;
+    padding: 10px 0;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color: #5e81ac;
+    border-radius: 25px;
+  }
+  
+  .nav-links a:hover,
+  .nav-links a:focus {
+    background-color: #81a1c1;
+    border-radius: 25px;
+  }
+  
+  .expanded {
+    display: unset;
+  }
+  
+  @media screen and (min-width: 636px) {
+    .nav-links {
+      margin-left: 5em;
+      display: block;
+      position: static;
+      width: auto;
+      background: none;
+    }
+  
+    .nav-links a {
+      display: inline-block;
+      padding: 15px 20px;
+    }
+  
+    .hamburger {
+        display: none;
+    }
+    }

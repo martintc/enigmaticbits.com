@@ -1,0 +1,154 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v4.11.3"><title>Embedded Hello World</title><link rel="stylesheet" href="/_astro/about.ziih_YEc.css">
+<style>html{background-color:#2e3440;font-family:sans-serif;margin:20px}header{background-color:#434c5e;border-radius:25px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}footer{background-color:#434c5e;border-radius:25px}footer a:hover,footer a:focus{background-color:#81a1c1;border-radius:25px}body{margin:0 auto;width:100%;max-width:80ch;padding:1rem;line-height:1.5;color:#d8dee9;background-color:#4c566a;border-radius:25px}.body-content{padding:20px}.body-content ul{margin-left:30px}*{box-sizing:border-box}h1{margin:1rem 0;font-size:2.5rem;color:#d8dee9}ul{list-style:circle}.blog-links a{color:#ebcb8b}.blog-links li{list-style:circle}.hamburger{padding:10px 20px;cursor:pointer}.hamburger .line{display:block;width:30px;height:5px;margin-top:10px;margin-bottom:10px;background-color:#eceff4}.nav-links{width:100%;top:5rem;left:48px;background-color:#a09c96;display:none;margin:0;color:#d8dee9}.nav-links a{display:block;text-align:center;padding:10px 0;text-decoration:none;font-size:1.2rem;font-weight:700;text-transform:uppercase;background-color:#5e81ac;border-radius:25px}.nav-links a:hover,.nav-links a:focus{background-color:#81a1c1;border-radius:25px}.expanded{display:unset}@media screen and (min-width: 636px){.nav-links{margin-left:5em;display:block;position:static;width:auto;background:none}.nav-links a{display:inline-block;padding:15px 20px}.hamburger{display:none}}a[data-astro-cid-yxtifmrq]{padding:.5rem 1rem;color:#fff;background-color:#5e81ac;text-decoration:none;border-radius:25px}footer[data-astro-cid-sz7xmlte]{display:flex;gap:1rem;margin-top:2rem}
+</style><script type="module">document.querySelector(".hamburger").addEventListener("click",()=>{document.querySelector(".nav-links").classList.toggle("expanded")});
+</script></head> <body> <header> <nav> <div class="hamburger"> <span class="line"></span> <span class="line"></span> <span class="line"></span> </div> <div class="nav-links"> <a href="/">Home</a> <a href="/about/">About</a> <a href="/blog/">Blog</a> </div> </nav> </header> <h1>Embedded Hello World</h1> <div class="body-content">  <p>Written by Todd</p> <p>Published on: 2022-09-27</p> <h2 id="needed-documentation">Needed Documentation</h2>
+<ul>
+<li><a href="https://content.arduino.cc/assets/NanoV3.3_sch.pdf?_gl=1*rft1wh*_ga*NTYyODUzODE1LjE2MzMxNjQ3NDg.*_ga_NEXN8H46L5*MTYzODg4NTI3Ny43LjEuMTYzODg4NTcwOC4w">Arduino Nano PCB design</a></li>
+<li><a href="https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf">Atmega328P datasheet</a></li>
+</ul>
+<h2 id="materials-used">Materials used</h2>
+<ul>
+<li><a href="https://store.arduino.cc/products/arduino-nano">Arduino Nano</a></li>
+<li><a href="https://store.arduino.cc/products/arduino-uno-rev3/">Arduino Uno R3</a></li>
+<li>Relevant cable</li>
+<li>Computer</li>
+</ul>
+<h2 id="software-used">Software Used</h2>
+<ul>
+<li>make (for easy of compiling and building)</li>
+<li>avr-gcc (our compiler for avr ISA)</li>
+<li>binutils-avr</li>
+<li>avr-libc</li>
+<li>avrdude (used to flash board)</li>
+</ul>
+<p>The software above is just the software that I am using. It works on MacOS and Linux. However, other tools exist.</p>
+<h2 id="goal">Goal</h2>
+<p>In this session of the series, the goal is to accomplish the ‘Hello World’ of embedded programming. Along the way we will discuss the cyclic executive, poor delay timers, and touch some on driver design.</p>
+<h2 id="hello-world">Hello World</h2>
+<p>In embedded development, the iconic hello world is a little different. With most programming environments, we expect a ‘hello world’ to just print out a line of text to the standard input/output. In embedded, it is blinking an LED. The reason is because in order to print a line of text, a series of drivers need to be written such as a UART, interrupts, timers, and more.</p>
+<h2 id="cyclic-executive">Cyclic executive</h2>
+<p>One main component on this program will be exploring the idea of the cyclic executive. In the first tutorial, we had just a while loop that looked like so:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">    while</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">) {}</span></span>
+<span class="line"></span></code></pre>
+<p>This cause an infinite loop so that the return statement was never hit and the program’s life did not end. If we let the program run to completion, the Atmega device would hit the reset vector and essentially start over. This is not preferable in embedded development since the idea is we can create a device and it just does it’s job indefinitely. We can not expect users to hook it up and tamper with the code.</p>
+<p>Now, we will explore another purpose for the loop. We will call this the cyclic executive, another way to look at it is a process scheduler, however that would become more apparent with more going on, such as getting temperature readings, updating internal logs in the EEPROM, and communicating the temperature over ethernet or a UART. However, what we are doing is defining recurring processes to run, or that is one approach to it. The cyclic executive is just the loop of what we want the micro-controller to do forever.</p>
+<h2 id="blinking-the-led">Blinking the LED</h2>
+<p>In order to blink the LED, we will need a way to tell the LED to turn off and on. If we remember from the last article, we may remember that there is a hardware register to handle the toggling. This is PINB (0x23).  Writing a 1 to the 5th bit position of this register will toggle our LED on and off. We can also designate the appropriate pin as an output using DDRB (0x24).</p>
+<p>Last, we need some time sequence. The Atmega328P has a clock cycle of 16 Mhz, meaning it will experience 16,000,000 clock cycles in a second. Theoretically, it will be off for 8 million cycles and on for 8 million cycles in a second, way to fast to notice. If we don’t implement some sort of delay, it will appear as if the LED comes on, but never turns off. So, we need a delay timer.</p>
+<p>The Atmega 328P comes with some built in timers, however, we are going to simplify this by using a software delay. Software delays are rather unreliable, but will show the important later as to why hardware timers are so much more convient. Using a software delay, we are not able to garuntee that a certain trigger will happen in a certain time frame. Also, when we go to toggle our LED, this is a time gap that happens to shift the accuracy of our delay.</p>
+<h2 id="device-driver-design">Device driver design</h2>
+<p>The code implements a simplified device driver design. In future articles, we will explore this a little more indepth, but this is just a simplified design that will introduce the reader to working with more than a single file.</p>
+<h2 id="the-code">The code</h2>
+<h3 id="makefile">Makefile</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">    CC</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> avr-gcc</span></span>
+<span class="line"><span style="color:#B392F0">    CC_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -Os</span><span style="color:#79B8FF"> -DF_CPU16000000UL</span><span style="color:#79B8FF"> -mmcu=atmega328p</span></span>
+<span class="line"><span style="color:#B392F0">    LINK_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -mmcu=atmega328p</span></span>
+<span class="line"><span style="color:#B392F0">    OBJ_CPY</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> avr-objcopy</span></span>
+<span class="line"><span style="color:#B392F0">    OBJ_CPY_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -O</span><span style="color:#9ECBFF"> ihex</span><span style="color:#79B8FF"> -R</span><span style="color:#9ECBFF"> .eeprom</span></span>
+<span class="line"><span style="color:#B392F0">    AVR_DUDE</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> avrdude</span></span>
+<span class="line"><span style="color:#B392F0">    AVR_DUDE_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -F</span><span style="color:#79B8FF"> -V</span><span style="color:#79B8FF"> -c</span><span style="color:#9ECBFF"> arduino</span><span style="color:#79B8FF"> -p</span><span style="color:#9ECBFF"> ATMEGA328P</span><span style="color:#79B8FF"> -P</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">    all:</span><span style="color:#9ECBFF"> compile</span><span style="color:#9ECBFF"> link</span><span style="color:#9ECBFF"> cpy</span><span style="color:#9ECBFF"> flash</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">    compile:</span></span>
+<span class="line"><span style="color:#E1E4E8">	${CC} ${CC_FLAGS} </span><span style="color:#79B8FF">-c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> led.o</span><span style="color:#9ECBFF"> led.c</span></span>
+<span class="line"><span style="color:#E1E4E8">    	${CC} ${CC_FLAGS} </span><span style="color:#79B8FF">-c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> main.o</span><span style="color:#9ECBFF"> main.c</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">    link:</span></span>
+<span class="line"><span style="color:#E1E4E8">	${CC} ${LINK_FLAGS} </span><span style="color:#79B8FF">*</span><span style="color:#9ECBFF">.o</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> led</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">    cpy:</span></span>
+<span class="line"><span style="color:#E1E4E8">        ${OBJ_CPY} ${OBJ_CPY_FLAGS} </span><span style="color:#9ECBFF">led</span><span style="color:#9ECBFF"> led.hex</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">    flash:</span></span>
+<span class="line"><span style="color:#B392F0">        sudo</span><span style="color:#9ECBFF"> avrdude</span><span style="color:#79B8FF"> -F</span><span style="color:#79B8FF"> -V</span><span style="color:#79B8FF"> -c</span><span style="color:#9ECBFF"> arduino</span><span style="color:#79B8FF"> -p</span><span style="color:#9ECBFF"> ATMEGA328</span><span style="color:#79B8FF"> -P</span><span style="color:#9ECBFF"> /dev/tty.usbserial-140</span><span style="color:#79B8FF"> -b</span><span style="color:#79B8FF"> 57600</span><span style="color:#79B8FF"> -U</span><span style="color:#9ECBFF"> flash:w:led.hex</span></span>
+<span class="line"></span></code></pre>
+<h3 id="mainc">main.c</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">    #include</span><span style="color:#9ECBFF"> "led.h"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    void</span><span style="color:#B392F0"> delay</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#F97583">      for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> int</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 1000</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">      	  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> long</span><span style="color:#E1E4E8"> j </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; j </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 32</span><span style="color:#E1E4E8">; j</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#E1E4E8">    	  }</span></span>
+<span class="line"><span style="color:#E1E4E8">      }</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    int</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8"> () {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">        /* initialize LED driver */</span></span>
+<span class="line"><span style="color:#B392F0">        init_led</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  	    while</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">            led_toggle</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#B392F0">            delay</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">        return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span></code></pre>
+<h3 id="ledh">led.h</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">    #ifndef</span><span style="color:#B392F0"> LED_H</span></span>
+<span class="line"><span style="color:#F97583">    #define</span><span style="color:#B392F0"> LED_H</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    void</span><span style="color:#B392F0"> init_led</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    void</span><span style="color:#B392F0"> led_toggle</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    #endif</span></span>
+<span class="line"></span></code></pre>
+<h3 id="ledc">led.c</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">    #define</span><span style="color:#B392F0"> DDRB</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">24</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#F97583">    #define</span><span style="color:#B392F0"> PORTB</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">25</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#F97583">    #define</span><span style="color:#B392F0"> PINB</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">23</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    void</span><span style="color:#B392F0"> init_led</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#E1E4E8">    	 DDRB </span><span style="color:#F97583">=</span><span style="color:#F97583"> 0x</span><span style="color:#79B8FF">20</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    void</span><span style="color:#B392F0"> led_toggle</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#E1E4E8">    	 PINB </span><span style="color:#F97583">=</span><span style="color:#F97583"> 0x</span><span style="color:#79B8FF">20</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span></code></pre>
+<h2 id="terminal-output-from-running-make">Terminal output from running make</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">   Device-Driver-Design</span><span style="color:#9ECBFF"> %</span><span style="color:#9ECBFF"> make</span></span>
+<span class="line"><span style="color:#B392F0">   avr-gcc</span><span style="color:#79B8FF"> -Os</span><span style="color:#79B8FF"> -DF_CPU16000000UL</span><span style="color:#79B8FF"> -mmcu=atmega328p</span><span style="color:#79B8FF"> -c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> led.o</span><span style="color:#9ECBFF"> led.c</span></span>
+<span class="line"><span style="color:#B392F0">   avr-gcc</span><span style="color:#79B8FF"> -Os</span><span style="color:#79B8FF"> -DF_CPU16000000UL</span><span style="color:#79B8FF"> -mmcu=atmega328p</span><span style="color:#79B8FF"> -c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> main.o</span><span style="color:#9ECBFF"> main.c</span></span>
+<span class="line"><span style="color:#B392F0">   avr-gcc</span><span style="color:#79B8FF"> -mmcu=atmega328p</span><span style="color:#79B8FF"> *</span><span style="color:#9ECBFF">.o</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> led</span></span>
+<span class="line"><span style="color:#B392F0">   avr-objcopy</span><span style="color:#79B8FF"> -O</span><span style="color:#9ECBFF"> ihex</span><span style="color:#79B8FF"> -R</span><span style="color:#9ECBFF"> .eeprom</span><span style="color:#9ECBFF"> led</span><span style="color:#9ECBFF"> led.hex</span></span>
+<span class="line"><span style="color:#6A737D">   # 57600</span></span>
+<span class="line"><span style="color:#B392F0">   sudo</span><span style="color:#9ECBFF"> avrdude</span><span style="color:#79B8FF"> -F</span><span style="color:#79B8FF"> -V</span><span style="color:#79B8FF"> -c</span><span style="color:#9ECBFF"> arduino</span><span style="color:#79B8FF"> -p</span><span style="color:#9ECBFF"> ATMEGA328</span><span style="color:#79B8FF"> -P</span><span style="color:#9ECBFF"> /dev/tty.usbserial-140</span><span style="color:#79B8FF"> -b</span><span style="color:#79B8FF"> 57600</span><span style="color:#79B8FF"> -U</span><span style="color:#9ECBFF"> flash:w:led.hex</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> AVR</span><span style="color:#9ECBFF"> device</span><span style="color:#9ECBFF"> initialized</span><span style="color:#9ECBFF"> and</span><span style="color:#9ECBFF"> ready</span><span style="color:#9ECBFF"> to</span><span style="color:#9ECBFF"> accept</span><span style="color:#9ECBFF"> instructions</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">   Reading</span><span style="color:#F97583"> |</span><span style="color:#6A737D"> ################################################## | 100% 0.00s</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> Device</span><span style="color:#9ECBFF"> signature</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> 0x1e950f</span><span style="color:#E1E4E8"> (probably </span><span style="color:#9ECBFF">m328p</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> Expected</span><span style="color:#9ECBFF"> signature</span><span style="color:#9ECBFF"> for</span><span style="color:#9ECBFF"> ATmega328</span><span style="color:#9ECBFF"> is</span><span style="color:#9ECBFF"> 1E</span><span style="color:#79B8FF"> 95</span><span style="color:#79B8FF"> 14</span></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> NOTE:</span><span style="color:#9ECBFF"> "flash"</span><span style="color:#9ECBFF"> memory</span><span style="color:#9ECBFF"> has</span><span style="color:#9ECBFF"> been</span><span style="color:#9ECBFF"> specified,</span><span style="color:#9ECBFF"> an</span><span style="color:#9ECBFF"> erase</span><span style="color:#9ECBFF"> cycle</span><span style="color:#9ECBFF"> will</span><span style="color:#9ECBFF"> be</span><span style="color:#9ECBFF"> performed</span></span>
+<span class="line"><span style="color:#B392F0">         To</span><span style="color:#9ECBFF"> disable</span><span style="color:#9ECBFF"> this</span><span style="color:#9ECBFF"> feature,</span><span style="color:#9ECBFF"> specify</span><span style="color:#9ECBFF"> the</span><span style="color:#79B8FF"> -D</span><span style="color:#9ECBFF"> option.</span></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> erasing</span><span style="color:#9ECBFF"> chip</span></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> reading</span><span style="color:#9ECBFF"> input</span><span style="color:#9ECBFF"> file</span><span style="color:#9ECBFF"> "led.hex"</span></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> input</span><span style="color:#9ECBFF"> file</span><span style="color:#9ECBFF"> led.hex</span><span style="color:#9ECBFF"> auto</span><span style="color:#9ECBFF"> detected</span><span style="color:#9ECBFF"> as</span><span style="color:#9ECBFF"> Intel</span><span style="color:#9ECBFF"> Hex</span></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> writing</span><span style="color:#9ECBFF"> flash</span><span style="color:#E1E4E8"> (264 </span><span style="color:#9ECBFF">bytes</span><span style="color:#E1E4E8">):</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">   Writing</span><span style="color:#F97583"> |</span><span style="color:#6A737D"> ################################################## | 100% 0.12s</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#79B8FF"> 264</span><span style="color:#9ECBFF"> bytes</span><span style="color:#9ECBFF"> of</span><span style="color:#9ECBFF"> flash</span><span style="color:#9ECBFF"> written</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">   avrdude:</span><span style="color:#9ECBFF"> safemode:</span><span style="color:#9ECBFF"> Fuses</span><span style="color:#9ECBFF"> OK</span><span style="color:#E1E4E8"> (E:00, </span><span style="color:#9ECBFF">H:00,</span><span style="color:#9ECBFF"> L:00</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">   avrdude</span><span style="color:#9ECBFF"> done.</span><span style="color:#9ECBFF">  Thank</span><span style="color:#9ECBFF"> you.</span></span>
+<span class="line"></span></code></pre>
+<h2 id="mainc-walk-through">main.c walk through</h2>
+<p>First thing done in <code>main.c</code> is to include our <code>led.h</code> file. This will let main know of the methods that are external to <code>main.c</code>.</p>
+<p>Next, there is the delay method. This is just a method that employs a nested for-loop where it increments variables <code>i</code> and <code>j</code>. Both of those variables are defined as <code>volatile</code>. This is because if they are not implemented as <code>volatile</code>, the compiler may optimize them away, remember in the first article, sometimes the compiler will make decisions we don’t one. In this case, the compiler will assume the output of those for-loops and optimize them out. We can prevent this by declaring those two variables as <code>volatile</code>. This tell the compiler that we need forced checking by the processor on those values.</p>
+<p>The main function is fairly straight forward. First, initializing the led, which we will see how it is done in <code>led.c</code>. The while loop occurs, every iteration of the while loop, we are causing a delay and then toggling the LED.</p>
+<h2 id="ledh-walk-through">led.h walk through</h2>
+<p>In this header file, we are just defining methods that we want external files to know about. In this case, we only want <code>main.c</code> to know about <code>init_led</code> and <code>led_toggle</code>. Method that are implemented in <code>led.c</code>, but not declared in <code>led.h</code> that is included in <code>main.c</code>, can not be called on by <code>main.c</code>.</p>
+<h2 id="taking-a-look-at-oop-design">Taking a look at OOP design</h2>
+<p>In the led.h walk through, it was just mentioned that <code>main.c</code> will only know about methods that are declared in <code>led.h</code>. If in <code>led.c</code> we have a method called <code>increment()</code> that just incremented a value, since the method signature is not in <code>led.h</code>, the code in <code>main.c</code> does not know about this. This can create a way to implement private methods. All methods declared in the header file are public methods. In this article, we will not implement private methods in C, but I want to mention this to show a little bit about device driver design. We will be exploring this more in later articles in this series.</p>
+<h2 id="ledc-1">led.c</h2>
+<p>Much like in the last article, we start off by defining our hardware registers. I defined PORTB, however, we do not directly use the register. Instead, we will toggle the value in PORTB by writing a ‘1’ to PINB.</p>
+<p>Next we initialize the led device driver. This is done just by writing a ‘1’ to bit 5 in the hardware register DDRB. Instead of binary, we used the hexadecimal representation. During the initialization phase, we are just concerned with setting up the hardware, which in this case it turning the appropriate pin in Port B as an output.</p>
+<p>Lastly, we toggle the LED by writing a ‘1’ to the 5th bit of the PINB register.</p>  </div> <footer data-astro-cid-sz7xmlte> <a href="https://www.github.com/martintc" data-astro-cid-yxtifmrq>github</a>  </footer>  </body> </html>

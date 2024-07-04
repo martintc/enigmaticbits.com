@@ -1,0 +1,283 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v4.11.3"><title>Swift on Linux (2023)</title><link rel="stylesheet" href="/_astro/about.ziih_YEc.css">
+<style>html{background-color:#2e3440;font-family:sans-serif;margin:20px}header{background-color:#434c5e;border-radius:25px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}footer{background-color:#434c5e;border-radius:25px}footer a:hover,footer a:focus{background-color:#81a1c1;border-radius:25px}body{margin:0 auto;width:100%;max-width:80ch;padding:1rem;line-height:1.5;color:#d8dee9;background-color:#4c566a;border-radius:25px}.body-content{padding:20px}.body-content ul{margin-left:30px}*{box-sizing:border-box}h1{margin:1rem 0;font-size:2.5rem;color:#d8dee9}ul{list-style:circle}.blog-links a{color:#ebcb8b}.blog-links li{list-style:circle}.hamburger{padding:10px 20px;cursor:pointer}.hamburger .line{display:block;width:30px;height:5px;margin-top:10px;margin-bottom:10px;background-color:#eceff4}.nav-links{width:100%;top:5rem;left:48px;background-color:#a09c96;display:none;margin:0;color:#d8dee9}.nav-links a{display:block;text-align:center;padding:10px 0;text-decoration:none;font-size:1.2rem;font-weight:700;text-transform:uppercase;background-color:#5e81ac;border-radius:25px}.nav-links a:hover,.nav-links a:focus{background-color:#81a1c1;border-radius:25px}.expanded{display:unset}@media screen and (min-width: 636px){.nav-links{margin-left:5em;display:block;position:static;width:auto;background:none}.nav-links a{display:inline-block;padding:15px 20px}.hamburger{display:none}}a[data-astro-cid-yxtifmrq]{padding:.5rem 1rem;color:#fff;background-color:#5e81ac;text-decoration:none;border-radius:25px}footer[data-astro-cid-sz7xmlte]{display:flex;gap:1rem;margin-top:2rem}
+</style><script type="module">document.querySelector(".hamburger").addEventListener("click",()=>{document.querySelector(".nav-links").classList.toggle("expanded")});
+</script></head> <body> <header> <nav> <div class="hamburger"> <span class="line"></span> <span class="line"></span> <span class="line"></span> </div> <div class="nav-links"> <a href="/">Home</a> <a href="/about/">About</a> <a href="/blog/">Blog</a> </div> </nav> </header> <h1>Swift on Linux (2023)</h1> <div class="body-content">  <p>Written by Todd</p> <p>Published on: 2023-05-23</p> <h1 id="introduction">Introduction</h1>
+<p>As seen from previous posts, I have taken to dabbling with Swift on my M1 MacBook Air running MacOS. Now, it is time to take a look at how swift does on Linux. I believe Swift is an interesting language that can bring a rather unique value proposition. As someone who has written Rust for open sourced projects and professionally (for a paycheck) C#, Swift strikes a really interesting balance. In Rust, I sometimes end up at a point where I am tackling a problem and I am thinking to myself, “if only I had X from C# to do this.” And likewise, in C# (especailly when it comes to errors and enums), I hit a situation where I look at something and go, “if I only I had Y from Rust.” Swift, seems to be able to strike that balance some. It has the features of C# I want while also have quiet a few (not all) of the features of Rust I want. So I tend to describe it as, it is a perfect middle ground (or at least the best middel ground present) between C# and Rust.</p>
+<h1 id="creating-an-initial-project-on-linux">Creating an initial project on Linux</h1>
+<p>My main linux machine right now is running Fedora 37. Swift has been in the main repositories of Fedora for awhile. So getting Swift 5.8 was as simple as invoking the package manager.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  sudo</span><span style="color:#9ECBFF"> dnf</span><span style="color:#9ECBFF"> install</span><span style="color:#9ECBFF"> swift</span></span>
+<span class="line"></span></code></pre>
+<p>Now, with the basic tool chain installed, it is time to get to work. I create a work space, which was just a folder called “Hello.” Navigating inside of that folder, time to invoke swift to create the project essentially.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  swift</span><span style="color:#9ECBFF"> package</span><span style="color:#9ECBFF"> init</span><span style="color:#79B8FF"> --type</span><span style="color:#9ECBFF"> executable</span></span>
+<span class="line"></span></code></pre>
+<p>This is just to create a simple executable package. Which gives me a little folder structure and a <code>main.swift</code> file.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#6A737D">  // The Swift Programming Language</span></span>
+<span class="line"><span style="color:#6A737D">  // https://docs.swift.org/swift-book</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#79B8FF">  print</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Hello, world!"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span></code></pre>
+<p>Just a simple hello world. First, to see if it actually works.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  swift</span><span style="color:#9ECBFF"> build</span></span>
+<span class="line"></span></code></pre>
+<p>Okay, it compiles fine apparently. Now, how about running?</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  swift</span><span style="color:#9ECBFF"> run</span></span>
+<span class="line"></span></code></pre>
+<p>Look like it can at least run a hello world.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  ╭─todd@fedora</span><span style="color:#9ECBFF"> ~/Learning/Swift/Hello</span><span style="color:#E1E4E8"> </span></span>
+<span class="line"><span style="color:#B392F0">  ╰─$</span><span style="color:#9ECBFF"> swift</span><span style="color:#9ECBFF"> run</span></span>
+<span class="line"><span style="color:#B392F0">  warning:</span><span style="color:#9ECBFF"> 'hello':</span><span style="color:#9ECBFF"> warning:</span><span style="color:#9ECBFF"> direct</span><span style="color:#9ECBFF"> reference</span><span style="color:#9ECBFF"> to</span><span style="color:#9ECBFF"> protected</span><span style="color:#9ECBFF"> function</span><span style="color:#9ECBFF"> `</span><span style="color:#E1E4E8">$sSJ12isWhitespaceSbvg</span><span style="color:#9ECBFF">' in `/usr/libexec/swift/5.8/bin/../lib/swift/linux/libswiftCore.so' may break pointer equality</span></span>
+<span class="line"><span style="color:#B392F0">  Building</span><span style="color:#9ECBFF"> for debugging...</span></span>
+<span class="line"><span style="color:#B392F0">  Build</span><span style="color:#9ECBFF"> complete! (0.08s)</span></span>
+<span class="line"><span style="color:#B392F0">  Hello,</span><span style="color:#9ECBFF"> world!</span></span>
+<span class="line"></span></code></pre>
+<p>Looks like we have lift off.</p>
+<h1 id="packageswift">Package.swift</h1>
+<p>Creating the project also gives us a <code>Package.swift</code> file. Which, at least shown what we are given, defines some simple things about the package. This is also, I believe, how 3rd party packages can be pulled in. From my understanding, you can do something like define dependencies by linking to their git repos and even specify a release from the repo and during the build phase, it will pull in the code and compile it with the application. Like with all good Linux applications, we need a command line interface, so I will use this as an opportunity to try this out.</p>
+<p>There is a library, apparently from a google employee, that help provides a nice way to help build a command line driven program called <a href="https://github.com/objecthub/swift-commandlinekit">CommandlineKit</a>. Unfortunatley, the github repo also appears to make mention of Swift 5.5, but lets hope versioning is on my side here. The current version Fedora has is 5.8 (5.9 should be out with WWDC just happening). So, lets hope it is compatible.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#6A737D">  // swift-tools-version: 5.8</span></span>
+<span class="line"><span style="color:#6A737D">  // The swift-tools-version declares the minimum version of Swift required to build this package.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> PackageDescription</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#F97583"> package</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> Package</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#79B8FF">    name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Hello"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">    dependencies</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#E1E4E8">        .</span><span style="color:#79B8FF">package</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">url</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"https://github.com/jordanbaird/Prism"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">from</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"0.1.2"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">    ],</span></span>
+<span class="line"><span style="color:#79B8FF">    targets</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#6A737D">        // Targets are the basic building blocks of a package, defining a module or a test suite.</span></span>
+<span class="line"><span style="color:#6A737D">        // Targets can depend on other targets in this package and products from dependencies.</span></span>
+<span class="line"><span style="color:#E1E4E8">        .</span><span style="color:#79B8FF">executableTarget</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#79B8FF">            name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Hello"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">            dependencies</span><span style="color:#E1E4E8">: [</span><span style="color:#9ECBFF">"Prism"</span><span style="color:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#79B8FF">            path</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Sources"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">    ]</span></span>
+<span class="line"><span style="color:#E1E4E8">  )</span></span>
+<span class="line"></span></code></pre>
+<p>Alright, so far, I am impressed. When I first looked at this file, I didn’t pay much attention to it, but adding a dependency made me actually look at it and see something here. This file defines the package, duh. However, the package is just defined like a <em>struct</em> in Swift. I like this a lot. When the build system is essentially written in the language itself. This is something zig does with <em>zig.build</em>. Rust does have a <em>build.rs</em> but you still have a <em>Cargo.toml</em> file, which is good, but its not optimal. C# has solution and csproj files which are XML/XAML/XML-like (YUK!).</p>
+<p>I think coloring can look pretty good for a command line utility, so Prism is a nice package that looks like it can give some coloring.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#6A737D">  // The Swift Programming Language</span></span>
+<span class="line"><span style="color:#6A737D">  // https://docs.swift.org/swift-book</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> Prism</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#E1E4E8"> text </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> Prism</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">spacing</span><span style="color:#E1E4E8">: .spaces) {</span></span>
+<span class="line"><span style="color:#79B8FF">    ForegroundColor</span><span style="color:#E1E4E8">(.green, </span><span style="color:#9ECBFF">"This text's color is green"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#79B8FF">  print</span><span style="color:#E1E4E8">(text)</span></span>
+<span class="line"></span></code></pre>
+<p>It does indeed print the text as green.</p>
+<p>Now, lets get some text from the command line and run it.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#6A737D">  // The Swift Programming Language</span></span>
+<span class="line"><span style="color:#6A737D">  // https://docs.swift.org/swift-book</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> Prism</span></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> Foundation</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#79B8FF"> CommandLine</span><span style="color:#E1E4E8">.</span><span style="color:#79B8FF">arguments</span><span style="color:#E1E4E8">.</span><span style="color:#79B8FF">isEmpty</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#79B8FF">    print</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">Prism</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">spacing</span><span style="color:#E1E4E8">: .spaces) {</span></span>
+<span class="line"><span style="color:#79B8FF">        ForegroundColor</span><span style="color:#E1E4E8">(.red, </span><span style="color:#9ECBFF">"No input into program"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> argument </span><span style="color:#F97583">in</span><span style="color:#79B8FF"> CommandLine</span><span style="color:#E1E4E8">.</span><span style="color:#79B8FF">arguments</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#79B8FF">    print</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">Prism</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">spacing</span><span style="color:#E1E4E8">: .spaces) {</span></span>
+<span class="line"><span style="color:#79B8FF">        ForegroundColor</span><span style="color:#E1E4E8">(.green, </span><span style="color:#9ECBFF">"Arg: </span><span style="color:#9ECBFF">\(argument)</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span></code></pre>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  ╭─todd@fedora</span><span style="color:#9ECBFF"> ~/Learning/Swift/Hello</span><span style="color:#E1E4E8"> </span></span>
+<span class="line"><span style="color:#B392F0">  ╰─$</span><span style="color:#9ECBFF"> ./.build/x86_64-unknown-linux-gnu/debug/Hello</span><span style="color:#9ECBFF"> hello</span></span>
+<span class="line"><span style="color:#B392F0">  Arg:</span><span style="color:#9ECBFF"> ./.build/x86_64-unknown-linux-gnu/debug/Hello</span></span>
+<span class="line"><span style="color:#B392F0">  Arg:</span><span style="color:#9ECBFF"> hello</span></span>
+<span class="line"></span></code></pre>
+<p>So, interestingly enough, there will always be atleast one argument. We also need to ensure we run the program from the debug folder. Using <em>swift run</em> and trying to pass in arguments doesnt work.</p>
+<p>To tame, this a little more, there is a nice library that is available called <em>Swift-CommandLineKit</em>. This also introduces in how to do the <em>package.swift</em> file to entertain more than a single dependency.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#6A737D">  // swift-tools-version: 5.8</span></span>
+<span class="line"><span style="color:#6A737D">  // The swift-tools-version declares the minimum version of Swift required to build this package.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> PackageDescription</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#F97583"> package</span><span style="color:#F97583"> =</span><span style="color:#79B8FF"> Package</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#79B8FF">    name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Hello"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">    products</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#E1E4E8">        .</span><span style="color:#79B8FF">executable</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Hello"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">targets</span><span style="color:#E1E4E8">: [</span><span style="color:#9ECBFF">"Hello"</span><span style="color:#E1E4E8">])</span></span>
+<span class="line"><span style="color:#E1E4E8">    ],</span></span>
+<span class="line"><span style="color:#79B8FF">    dependencies</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#E1E4E8">      .</span><span style="color:#79B8FF">package</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">url</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"https://github.com/jordanbaird/Prism"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">from</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"0.1.2"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">      .</span><span style="color:#79B8FF">package</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">url</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"https://github.com/objecthub/swift-commandlinekit"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">from</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"0.3.5"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">    ],</span></span>
+<span class="line"><span style="color:#79B8FF">    targets</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#6A737D">        // Targets are the basic building blocks of a package, defining a module or a test suite.</span></span>
+<span class="line"><span style="color:#6A737D">        // Targets can depend on other targets in this package and products from dependencies.</span></span>
+<span class="line"><span style="color:#E1E4E8">        .</span><span style="color:#79B8FF">executableTarget</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#79B8FF">            name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Hello"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">            dependencies</span><span style="color:#E1E4E8">: [</span></span>
+<span class="line"><span style="color:#E1E4E8">              .</span><span style="color:#79B8FF">product</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Prism"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">package</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Prism"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">              .</span><span style="color:#79B8FF">product</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">name</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"CommandLineKit"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">package</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"swift-commandlinekit"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">            ],</span></span>
+<span class="line"><span style="color:#79B8FF">            path</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Sources"</span><span style="color:#E1E4E8">),</span></span>
+<span class="line"><span style="color:#E1E4E8">    ]</span></span>
+<span class="line"><span style="color:#E1E4E8">  )</span></span>
+<span class="line"></span></code></pre>
+<p>Now that is sorted, how about something a little more proper?</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#6A737D">  // The Swift Programming Language</span></span>
+<span class="line"><span style="color:#6A737D">  // https://docs.swift.org/swift-book</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> CommandLineKit</span></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> Foundation</span></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> Prism</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  var</span><span style="color:#E1E4E8"> flags </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> Flags</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#E1E4E8"> help </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> flags.</span><span style="color:#79B8FF">option</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"h"</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"help"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">description</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Show description of usage."</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  try</span><span style="color:#E1E4E8"> flags.</span><span style="color:#79B8FF">parse</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> help.wasSet {</span></span>
+<span class="line"><span style="color:#79B8FF">    print</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">Prism</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">spacing</span><span style="color:#E1E4E8">: .spaces) {</span></span>
+<span class="line"><span style="color:#79B8FF">              ForegroundColor</span><span style="color:#E1E4E8">(.red, </span><span style="color:#9ECBFF">"hello"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">    })</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span></code></pre>
+<p>Look like it works so far. However, I want to print the actual flag description. I will change out the string that is printed from <em>ForegroundColor</em>.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#79B8FF">  print</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">Prism</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">spacing</span><span style="color:#E1E4E8">: .spaces) {</span></span>
+<span class="line"><span style="color:#79B8FF">    ForegroundColor</span><span style="color:#E1E4E8">(.red, </span><span style="color:#9ECBFF">"</span><span style="color:#9ECBFF">\(flags.</span><span style="color:#79B8FF">usageDescription</span><span style="color:#9ECBFF">())</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">  })</span></span>
+<span class="line"></span></code></pre>
+<p>Here is the output</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  ╭─todd@fedora</span><span style="color:#9ECBFF"> ~/Learning/Swift/Hello</span><span style="color:#E1E4E8"> </span></span>
+<span class="line"><span style="color:#B392F0">  ╰─$</span><span style="color:#9ECBFF"> ./.build/x86_64-unknown-linux-gnu/debug/Hello</span><span style="color:#79B8FF"> -h</span></span>
+<span class="line"><span style="color:#B392F0">  USAGE:</span><span style="color:#9ECBFF"> Hello</span><span style="color:#E1E4E8"> [&#x3C;option> </span><span style="color:#9ECBFF">...]</span><span style="color:#E1E4E8"> [--] [</span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8">arg</span><span style="color:#F97583">></span><span style="color:#E1E4E8"> ...]</span></span>
+<span class="line"><span style="color:#B392F0">  OPTIONS:</span></span>
+<span class="line"><span style="color:#B392F0">    -h,</span><span style="color:#79B8FF"> --help</span></span>
+<span class="line"><span style="color:#B392F0">      Show</span><span style="color:#9ECBFF"> description</span><span style="color:#9ECBFF"> of</span><span style="color:#9ECBFF"> usage.</span></span>
+<span class="line"></span></code></pre>
+<p>Alright, looks like I am getting somewhere. Now to do something a little useful. One thing I am excited to try out eventually is <a href="https://vapor.codes/">Vapor</a>, however before going there, it would be a good idea to make sure any networking at all works as it should. I assume it does, but Swift is such an Apple focused language, there is a chance that perhaps things don’t work exactly as they should. So, my plan is to add a REST API call to a free HTTP REST API for a <a href="https://deckofcardsapi.com/">deck of card</a>. There will be a new flag which will be called ‘new’ that will request a new deck from the API. I am not going to worry about actually deserializing the returned JSON, just make the call and ensure that I get back a 200 OK response.</p>
+<p>The following is the endpoint to hit.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count</span><span style="color:#9ECBFF">=1</span></span>
+<span class="line"></span></code></pre>
+<p>Here is the code</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="swift"><code><span class="line"><span style="color:#6A737D">  // The Swift Programming Language</span></span>
+<span class="line"><span style="color:#6A737D">  // https://docs.swift.org/swift-book</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> CommandLineKit</span></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> Foundation</span></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> FoundationNetworking</span></span>
+<span class="line"><span style="color:#F97583">  import</span><span style="color:#B392F0"> Prism</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  var</span><span style="color:#E1E4E8"> flags </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> Flags</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#E1E4E8"> help </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> flags.</span><span style="color:#79B8FF">option</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"h"</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"help"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">description</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Show description of usage."</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  let</span><span style="color:#E1E4E8"> newDeck </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> flags.</span><span style="color:#79B8FF">option</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"n"</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">"new"</span><span style="color:#E1E4E8">, </span><span style="color:#79B8FF">description</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"Request a new deck."</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  try</span><span style="color:#E1E4E8"> flags.</span><span style="color:#79B8FF">parse</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> help.wasSet {</span></span>
+<span class="line"><span style="color:#79B8FF">    print</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">Prism</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">spacing</span><span style="color:#E1E4E8">: .spaces) {</span></span>
+<span class="line"><span style="color:#79B8FF">              ForegroundColor</span><span style="color:#E1E4E8">(.yellow, </span><span style="color:#9ECBFF">"</span><span style="color:#9ECBFF">\(flags.</span><span style="color:#79B8FF">usageDescription</span><span style="color:#9ECBFF">())</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">          })</span></span>
+<span class="line"><span style="color:#79B8FF">    exit</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> newDeck.wasSet {</span></span>
+<span class="line"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> semaphore </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> DispatchSemaphore</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">value</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">    </span></span>
+<span class="line"><span style="color:#F97583">    guard</span><span style="color:#F97583"> let</span><span style="color:#E1E4E8"> url </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> URL</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">string</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">"https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1"</span><span style="color:#E1E4E8">) </span><span style="color:#F97583">else</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#79B8FF">        print</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">Prism</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">spacing</span><span style="color:#E1E4E8">: .spaces) {</span></span>
+<span class="line"><span style="color:#79B8FF">                  ForegroundColor</span><span style="color:#E1E4E8">(.red, </span><span style="color:#9ECBFF">"Error making url"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">              })</span></span>
+<span class="line"><span style="color:#79B8FF">        exit</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">0</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    let</span><span style="color:#E1E4E8"> task </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> URLSession.shared.</span><span style="color:#79B8FF">dataTask</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">with</span><span style="color:#E1E4E8">: url) {</span></span>
+<span class="line"><span style="color:#E1E4E8">        (data, response, error) </span><span style="color:#F97583">in</span></span>
+<span class="line"><span style="color:#F97583">        guard</span><span style="color:#F97583"> let</span><span style="color:#E1E4E8"> data </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> data, error </span><span style="color:#F97583">==</span><span style="color:#79B8FF"> nil</span><span style="color:#F97583"> else</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#79B8FF">            fatalError</span><span style="color:#E1E4E8">(error</span><span style="color:#F97583">!</span><span style="color:#E1E4E8">.localizedDescription)</span></span>
+<span class="line"><span style="color:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#79B8FF">        print</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Error: </span><span style="color:#9ECBFF">\(</span><span style="color:#79B8FF">String</span><span style="color:#9ECBFF">(</span><span style="color:#79B8FF">describing</span><span style="color:#9ECBFF">: response))</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#79B8FF">        print</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Fetched data size: </span><span style="color:#9ECBFF">\(data)</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#E1E4E8">        semaphore.</span><span style="color:#79B8FF">signal</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">    task.</span><span style="color:#79B8FF">resume</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#E1E4E8">    semaphore.</span><span style="color:#79B8FF">wait</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span></code></pre>
+<p>Lets do a diff to see the difference.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  diff</span><span style="color:#9ECBFF"> main.swift.old</span><span style="color:#9ECBFF"> main.swift</span><span style="color:#F97583"> ></span><span style="color:#9ECBFF"> diff</span></span>
+<span class="line"></span></code></pre>
+<p>Now the contents of the diff</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  ---</span><span style="color:#9ECBFF"> main.swift.old</span><span style="color:#9ECBFF">	2023-06-07</span><span style="color:#9ECBFF"> 21:34:11.054633442</span><span style="color:#79B8FF"> -0700</span></span>
+<span class="line"><span style="color:#B392F0">  +++</span><span style="color:#9ECBFF"> main.swift</span><span style="color:#9ECBFF">	2023-06-07</span><span style="color:#9ECBFF"> 21:29:47.711075885</span><span style="color:#79B8FF"> -0700</span></span>
+<span class="line"><span style="color:#B392F0">  @@</span><span style="color:#79B8FF"> -3,16</span><span style="color:#9ECBFF"> +3,45</span><span style="color:#9ECBFF"> @@</span></span>
+<span class="line"><span style="color:#B392F0">  import</span><span style="color:#9ECBFF"> CommandLineKit</span></span>
+<span class="line"><span style="color:#B392F0">  import</span><span style="color:#9ECBFF"> Foundation</span></span>
+<span class="line"><span style="color:#B392F0">  +import</span><span style="color:#9ECBFF"> FoundationNetworking</span></span>
+<span class="line"><span style="color:#B392F0">  import</span><span style="color:#9ECBFF"> Prism</span></span>
+<span class="line"><span style="color:#B392F0">  var</span><span style="color:#9ECBFF"> flags</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> Flags</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#79B8FF">  let</span><span style="color:#9ECBFF"> help</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> flags.option</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">"h"</span><span style="color:#B392F0">,</span><span style="color:#9ECBFF"> "help",</span><span style="color:#9ECBFF"> description:</span><span style="color:#9ECBFF"> "Show description of usage."</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +let</span><span style="color:#9ECBFF"> newDeck</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> flags.option</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">"n"</span><span style="color:#B392F0">,</span><span style="color:#9ECBFF"> "new",</span><span style="color:#9ECBFF"> description:</span><span style="color:#9ECBFF"> "Request a new deck."</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span></span>
+<span class="line"><span style="color:#B392F0">  try</span><span style="color:#9ECBFF"> flags.parse</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#B392F0"> help.wasSet</span><span style="color:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#79B8FF">       print</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">Prism</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">spacing:</span><span style="color:#9ECBFF"> .spaces</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">  -</span><span style="color:#9ECBFF">              ForegroundColor</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">.red,</span><span style="color:#9ECBFF"> "\(flags.usageDescription)"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  -</span><span style="color:#9ECBFF">    }</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  -}</span></span>
+<span class="line"><span style="color:#B392F0">  \</span><span style="color:#9ECBFF"> No</span><span style="color:#9ECBFF"> newline</span><span style="color:#9ECBFF"> at</span><span style="color:#9ECBFF"> end</span><span style="color:#9ECBFF"> of</span><span style="color:#9ECBFF"> file</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">              ForegroundColor</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">.yellow,</span><span style="color:#9ECBFF"> "\(flags.usageDescription())"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">          }</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    exit</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">0</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#B392F0">  +}</span></span>
+<span class="line"><span style="color:#B392F0">  +</span></span>
+<span class="line"><span style="color:#B392F0">  +if</span><span style="color:#9ECBFF"> newDeck.wasSet</span><span style="color:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    let</span><span style="color:#9ECBFF"> semaphore</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> DispatchSemaphore</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">value:</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#E1E4E8">    </span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    guard</span><span style="color:#9ECBFF"> let</span><span style="color:#9ECBFF"> url</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> URL</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">string:</span><span style="color:#9ECBFF"> "https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1"</span><span style="color:#E1E4E8">) </span><span style="color:#9ECBFF">else</span><span style="color:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">        print</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">Prism(spacing:</span><span style="color:#9ECBFF"> .spaces</span><span style="color:#E1E4E8">) </span><span style="color:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">                  ForegroundColor</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">.red,</span><span style="color:#9ECBFF"> "Error making url"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">              }</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">        exit</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">0</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    }</span></span>
+<span class="line"><span style="color:#B392F0">  +</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    let</span><span style="color:#9ECBFF"> task</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> URLSession.shared.dataTask</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">with:</span><span style="color:#9ECBFF"> url</span><span style="color:#E1E4E8">) </span><span style="color:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#E1E4E8">        (data, </span><span style="color:#9ECBFF">response,</span><span style="color:#9ECBFF"> error</span><span style="color:#E1E4E8">) in</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">        guard</span><span style="color:#9ECBFF"> let</span><span style="color:#9ECBFF"> data</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> data,</span><span style="color:#9ECBFF"> error</span><span style="color:#9ECBFF"> ==</span><span style="color:#9ECBFF"> nil</span><span style="color:#9ECBFF"> else</span><span style="color:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">            fatalError</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">error!.localizedDescription</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">        }</span></span>
+<span class="line"><span style="color:#B392F0">  +</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">        print</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">"Response: \(String(describing: response))"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">        print</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">"Fetched data size: \(data)"</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">        semaphore.signal</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    }</span></span>
+<span class="line"><span style="color:#B392F0">  +</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    task.resume</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#B392F0">  +</span><span style="color:#9ECBFF">    semaphore.wait</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#B392F0">  +}</span></span>
+<span class="line"></span></code></pre>
+<p>The first change is a little odd, or atleast, I have not seen it in swift projects on macOS. From what I have seen, you only need to import <em>FoundationNetworking</em> on linux and potentially other non-macOS operating systems such as Windows?</p>
+<p>A new flag option is added for requesting a new deck.</p>
+<p>The next biggest change is down towards the bottom where the program handles if an option is set for <em>newDeck</em>. A semaphore is needed to make the program wait for the task to finish as seen in the lower portion of the program. Otherwise, creat a URL object from a string representation of the URL, using a guard let for if for some reason that fails. Followed by creating a <em>URLSession</em> with a <em>dataTask</em> using the url. A closure takes in <em>data</em>, <em>response</em>, and <em>error</em>. If <em>error</em> <strong>is not</strong> nil, then perform a <em>fatalError</em>.  Otherwise, print the response and the data. The data, with how it is being printed, will only print the length of the data. Signal the semaphore so that way we can resume and finish out the program,</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  ╭─todd@fedora</span><span style="color:#9ECBFF"> ~/Learning/Swift/Hello</span><span style="color:#E1E4E8"> </span></span>
+<span class="line"><span style="color:#B392F0">  ╰─$</span><span style="color:#9ECBFF"> ./.build/x86_64-unknown-linux-gnu/debug/Hello</span><span style="color:#79B8FF"> -n</span></span>
+<span class="line"><span style="color:#B392F0">  Response:</span><span style="color:#9ECBFF"> Optional</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">&#x3C;</span><span style="color:#E1E4E8">HTTPURLResponse 0x00007f8f2c12f6d</span><span style="color:#F97583">0></span><span style="color:#E1E4E8"> { </span><span style="color:#B392F0">URL:</span><span style="color:#9ECBFF"> https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=</span><span style="color:#79B8FF">1</span><span style="color:#9ECBFF"> }{</span><span style="color:#9ECBFF"> status:</span><span style="color:#9ECBFF"> 200,</span><span style="color:#9ECBFF"> headers</span><span style="color:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#B392F0">     "Access-Control-Allow-Origin"</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> *</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Alt-Svc"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> h3=":443"</span><span style="color:#E1E4E8">; ma</span><span style="color:#F97583">=</span><span style="color:#9ECBFF">86400</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Cf-Cache-Status"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> DYNAMIC</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Cf-Ray"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> 7d3e7e4f3ec5eb73-SEA</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Content-Encoding"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> br</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Content-Type"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> "application/json"</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Date"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> Thu,</span><span style="color:#79B8FF"> 08</span><span style="color:#9ECBFF"> Jun</span><span style="color:#79B8FF"> 2023</span><span style="color:#9ECBFF"> 04:46:50</span><span style="color:#9ECBFF"> GMT</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Nel"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> {"success_fraction":0,"report_to":"cf-nel","max_age":604800}</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Referrer-Policy"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> same-origin</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Report-To"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=29uaD8qnUgUPvB1r5yx0zVHRvkrKn%2BxmSIEJZre%2FcZmGzVhlcshKWNymfLhVxSdRi4pvg4pmMuMIHMbenKYeaYTU0Wo%2F66xNGTCCzFbaRa4pAOizwibFnSJPYw5%2FeivxrkKlYhY9hTJt00s1E5%2BlFZg%3D"}],"group":"cf-nel","max_age":604800}</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Server"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> cloudflare</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "Vary"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> Origin</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "x-content-type-options"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> nosniff</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#B392F0">     "x-frame-options"</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> DENY</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">  } })</span></span>
+<span class="line"></span></code></pre>
+<p>Fetched data size: 79 bytes</p>  </div> <footer data-astro-cid-sz7xmlte> <a href="https://www.github.com/martintc" data-astro-cid-yxtifmrq>github</a>  </footer>  </body> </html>

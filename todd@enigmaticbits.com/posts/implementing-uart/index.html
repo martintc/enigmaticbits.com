@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v4.11.3"><title>Implementing UART</title><link rel="stylesheet" href="/_astro/about.ziih_YEc.css">
+<style>html{background-color:#2e3440;font-family:sans-serif;margin:20px}header{background-color:#434c5e;border-radius:25px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}footer{background-color:#434c5e;border-radius:25px}footer a:hover,footer a:focus{background-color:#81a1c1;border-radius:25px}body{margin:0 auto;width:100%;max-width:80ch;padding:1rem;line-height:1.5;color:#d8dee9;background-color:#4c566a;border-radius:25px}.body-content{padding:20px}.body-content ul{margin-left:30px}*{box-sizing:border-box}h1{margin:1rem 0;font-size:2.5rem;color:#d8dee9}ul{list-style:circle}.blog-links a{color:#ebcb8b}.blog-links li{list-style:circle}.hamburger{padding:10px 20px;cursor:pointer}.hamburger .line{display:block;width:30px;height:5px;margin-top:10px;margin-bottom:10px;background-color:#eceff4}.nav-links{width:100%;top:5rem;left:48px;background-color:#a09c96;display:none;margin:0;color:#d8dee9}.nav-links a{display:block;text-align:center;padding:10px 0;text-decoration:none;font-size:1.2rem;font-weight:700;text-transform:uppercase;background-color:#5e81ac;border-radius:25px}.nav-links a:hover,.nav-links a:focus{background-color:#81a1c1;border-radius:25px}.expanded{display:unset}@media screen and (min-width: 636px){.nav-links{margin-left:5em;display:block;position:static;width:auto;background:none}.nav-links a{display:inline-block;padding:15px 20px}.hamburger{display:none}}a[data-astro-cid-yxtifmrq]{padding:.5rem 1rem;color:#fff;background-color:#5e81ac;text-decoration:none;border-radius:25px}footer[data-astro-cid-sz7xmlte]{display:flex;gap:1rem;margin-top:2rem}
+</style><script type="module">document.querySelector(".hamburger").addEventListener("click",()=>{document.querySelector(".nav-links").classList.toggle("expanded")});
+</script></head> <body> <header> <nav> <div class="hamburger"> <span class="line"></span> <span class="line"></span> <span class="line"></span> </div> <div class="nav-links"> <a href="/">Home</a> <a href="/about/">About</a> <a href="/blog/">Blog</a> </div> </nav> </header> <h1>Implementing UART</h1> <div class="body-content">  <p>Written by Todd</p> <p>Published on: 2022-09-27</p> <h1 id="usart-on-the-atmega328p">USART on the AtMega328P</h1>
+<h2 id="needed-documentation">Needed Documentation</h2>
+<ul>
+<li><a href="https://content.arduino.cc/assets/NanoV3.3_sch.pdf?_gl=1*rft1wh*_ga*NTYyODUzODE1LjE2MzMxNjQ3NDg.*_ga_NEXN8H46L5*MTYzODg4NTI3Ny43LjEuMTYzODg4NTcwOC4w">Arduino Nano PCB design</a></li>
+<li><a href="https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf">Atmega328P datasheet</a></li>
+</ul>
+<h2 id="materials-used">Materials used</h2>
+<ul>
+<li><a href="https://store.arduino.cc/products/arduino-nano">Arduino Nano</a></li>
+<li><a href="https://store.arduino.cc/products/arduino-uno-rev3/">Arduino Uno R3</a></li>
+<li>Relevant cable</li>
+<li>Computer</li>
+</ul>
+<h2 id="software-used">Software Used</h2>
+<ul>
+<li>make (for easy of compiling and building)</li>
+<li>avr-gcc (our compiler for avr ISA)</li>
+<li>binutils-avr</li>
+<li>avr-libc</li>
+<li>avrdude (used to flash board)</li>
+<li>GNU Screen</li>
+</ul>
+<p>The software above is just the software that I am using. It works on MacOS and Linux. However, other tools exist.</p>
+<h2 id="goal">Goal</h2>
+<p>In this session, the goal is to implement the Universal Synchronous/Asyncrhonous Receiver Transmitter in just a mode to transmit data. This will result in being able to print text to a serial console that we can access over USB.</p>
+<p>At the end of this article, I will have done a walkthrough of code that can operate the USART in transmit mode to print a message, blink and LED and delay between those action.</p>
+<h2 id="gnu-screen">GNU Screen</h2>
+<p>One tool, or a tool with similar functionality, that will be needed if GNU Screen. I can not possibly cover all tools that offer this same functionality, so I will only cover the one I use, GNU Screen. If you are not familiar with GNU Screen, it can create terminal like sessions that can be attached and detatched from. I often use it as a way to have a persistent session on a server I work on over SSH between session. In this article and in the future, we will use that as our serial console to view the text display from our microcontroller.</p>
+<p>To be able to spawn a GNU Screen session to our arduino we will need to run the follow:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">sudo</span><span style="color:#9ECBFF"> screen</span><span style="color:#9ECBFF"> /dev/tty.usbserial-140</span><span style="color:#79B8FF"> 57600</span></span>
+<span class="line"></span></code></pre>
+<p>In the command we call <code>screen</code>, then we define the device we want to create a session to (<code>/dev/tty.usbserial-140</code>) and finally specify the baud rate (<code>57600</code>).</p>
+<p>To gracefully exit from this session, my recommend method is to hold the <code>control key</code> and press <code>a</code>, then release those button and press <code>k</code>. A prompt will ask if you want to kill the session, hit <code>y</code> to do so.</p>
+<p>NOTE: In order to flash to the AtMega 328P, we can not have any serial connections to the device, otherwise it will fail.</p>
+<h2 id="makefile">Makefile</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">CC</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> avr-gcc</span></span>
+<span class="line"><span style="color:#B392F0">CC_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -Os</span><span style="color:#79B8FF"> -DF_CPU16000000UL</span><span style="color:#79B8FF"> -mmcu=atmega328p</span></span>
+<span class="line"><span style="color:#B392F0">LINK_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -mmcu=atmega328p</span></span>
+<span class="line"><span style="color:#B392F0">OBJ_CPY</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> avr-objcopy</span></span>
+<span class="line"><span style="color:#B392F0">OBJ_CPY_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -O</span><span style="color:#9ECBFF"> ihex</span><span style="color:#79B8FF"> -R</span><span style="color:#9ECBFF"> .eeprom</span></span>
+<span class="line"><span style="color:#B392F0">AVR_DUDE</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> avrdude</span></span>
+<span class="line"><span style="color:#B392F0">AVR_DUDE_FLAGS</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> -F</span><span style="color:#79B8FF"> -V</span><span style="color:#79B8FF"> -c</span><span style="color:#9ECBFF"> arduino</span><span style="color:#79B8FF"> -p</span><span style="color:#9ECBFF"> ATMEGA328P</span><span style="color:#79B8FF"> -P</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">DEV</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> /dev/</span></span>
+<span class="line"><span style="color:#B392F0">USB</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> tty.usbserial-1140</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">SCREEN</span><span style="color:#9ECBFF"> =</span><span style="color:#9ECBFF"> screen</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">BAUD</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> 57600</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">all:</span><span style="color:#9ECBFF"> compile</span><span style="color:#9ECBFF"> link</span><span style="color:#9ECBFF"> cpy</span><span style="color:#9ECBFF"> flash</span><span style="color:#9ECBFF"> screen</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">compile:</span></span>
+<span class="line"><span style="color:#E1E4E8">    ${CC} ${CC_FLAGS} </span><span style="color:#79B8FF">-c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> led.o</span><span style="color:#9ECBFF"> led.c</span></span>
+<span class="line"><span style="color:#E1E4E8">    ${CC} ${CC_FLAGS} </span><span style="color:#79B8FF">-c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> usart.o</span><span style="color:#9ECBFF"> usart.c</span></span>
+<span class="line"><span style="color:#E1E4E8">    ${CC} ${CC_FLAGS} </span><span style="color:#79B8FF">-c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> main.o</span><span style="color:#9ECBFF"> main.c</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">link:</span></span>
+<span class="line"><span style="color:#E1E4E8">    ${CC} ${LINK_FLAGS} </span><span style="color:#79B8FF">*</span><span style="color:#9ECBFF">.o</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> main</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">cpy:</span></span>
+<span class="line"><span style="color:#E1E4E8">    ${OBJ_CPY} ${OBJ_CPY_FLAGS} </span><span style="color:#9ECBFF">main</span><span style="color:#9ECBFF"> main.hex</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">flash:</span></span>
+<span class="line"><span style="color:#6A737D">    # 57600</span></span>
+<span class="line"><span style="color:#B392F0">    sudo</span><span style="color:#9ECBFF"> avrdude</span><span style="color:#79B8FF"> -F</span><span style="color:#79B8FF"> -V</span><span style="color:#79B8FF"> -c</span><span style="color:#9ECBFF"> arduino</span><span style="color:#79B8FF"> -p</span><span style="color:#9ECBFF"> ATMEGA328</span><span style="color:#79B8FF"> -P</span><span style="color:#E1E4E8"> ${DEV}${USB} </span><span style="color:#79B8FF">-b</span><span style="color:#E1E4E8"> ${BAUD} </span><span style="color:#79B8FF">-U</span><span style="color:#9ECBFF"> flash:w:main.hex</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">screen:</span></span>
+<span class="line"><span style="color:#E1E4E8">    ${SCREEN} ${DEV}${USB} ${BAUD}</span></span>
+<span class="line"></span></code></pre>
+<p>A new rule is added for screen, this is mostly to add speed for testing. If you are not using GNU screen, this rule will need to be removed. The <code>usb</code> section also need to be adjusted to what the device appears as on your computer.</p>
+<h2 id="mainc">main.c</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">#include</span><span style="color:#9ECBFF"> "led.h"</span></span>
+<span class="line"><span style="color:#F97583">#include</span><span style="color:#9ECBFF"> "usart.h"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> delay</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> int</span><span style="color:#E1E4E8"> i </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; i </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 1000</span><span style="color:#E1E4E8">; i</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> int</span><span style="color:#E1E4E8"> j </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; j </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 1000</span><span style="color:#E1E4E8">; j</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">int</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8"> () {</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">  /* initialize usart */</span></span>
+<span class="line"><span style="color:#B392F0">  usart_init</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6A737D">  /* set message */</span></span>
+<span class="line"><span style="color:#B392F0">  usart_set_message</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Hello World"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#6A737D">  /* initialize LED */</span></span>
+<span class="line"><span style="color:#B392F0">  init_led</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  while</span><span style="color:#E1E4E8">(</span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">    led_toggle</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#B392F0">    usart_print</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#B392F0">    delay</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Above is our main.c where we include our relevant headers and implement the same delay function. The only change to our delay function was that I made the inner loop count to 64 to create a longer delay and I changed that inner variable <code>j</code> to an int since a long was not necessary.</p>
+<p>Down in the main function itself, we start off by initializing the USART, setting our message we want to print and initializing the LED. Then, we hit our cyclic executive, or essentially our basic process scheduler for the program. We will toggle the LED, print the message we set and wait. When the wait is over, we go back to toggling the LED, printing the message and waiting again. We do this cycle indefinitetly.</p>
+<h2 id="ledc--ledh">led.c / led.h</h2>
+<p>The LED class I will not be covering here since it was covered in the previous article, however, the source is down below.</p>
+<h3 id="ledh">led.h</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">#ifndef</span><span style="color:#B392F0"> LED_H</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> LED_H</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> init_led</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> led_toggle</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">#endif</span></span>
+<span class="line"></span></code></pre>
+<h3 id="ledc">led.c</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> DDRB</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">24</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> PORTB</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">25</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> PINB</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">23</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> init_led</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#E1E4E8">  DDRB </span><span style="color:#F97583">=</span><span style="color:#F97583"> 0x</span><span style="color:#79B8FF">20</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> led_toggle</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#E1E4E8">  PINB </span><span style="color:#F97583">=</span><span style="color:#F97583"> 0x</span><span style="color:#79B8FF">20</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<h2 id="usarth">usart.h</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">#ifndef</span><span style="color:#B392F0"> USART_H</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> USART_H</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> usart_set_message</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">char*</span><span style="color:#FFAB70"> message</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> usart_init</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> usart_print</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">#endif</span></span>
+<span class="line"></span></code></pre>
+<p>In <code>usart.h</code>, we simply define our public methods for our USART driver class. We want to be able to set our message, initialize our hardware and finally trigger the print functionality we build.</p>
+<h3 id="usartc">usart.c</h3>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#6A737D">/* Transmit/Receive buffer */</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> UDR0</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">C6</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#6A737D">// Can only write as transmit buffer when UDRE0 flag set</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">/* USART Control and Status Register 0 A */</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> UCSR0A</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">C0</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#6A737D">// bit 7 - USART Recv Complete [RXC0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 6 - USART transmit complete [TXC0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 5 - Data Register Empty [UDRE0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 4 - Frame error [FE0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 3 - Data OverRun [DOR0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 2 - USART Prity Error [UPE0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 1 - Double USART TX speed [U2X0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 0 - Multi-processor Comms [MPCM0]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> UDRE</span><span style="color:#79B8FF"> 5</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">/* USART Control and Status Register 0 B */</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> UCSR0B</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">C1</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#6A737D">// bit 7 - RX Complete Interrupt Enable 0 [RXCIE0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 6 - TX Complete Interrupt Enable 0 [TXCIE0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 5 - USART Data Register Empty IR enable 0 [UDRIE0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 4 - Receiver Enable 0 [RXEN0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 3 - Transmitter Enable 0 [TXEN0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 2 - Char size 0 [UCSZ02]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 1 - Receive Data Bit 8 0 [RXB80]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 0 - Transmit Data bit 8 0 [TCB80]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> TXEN0</span><span style="color:#79B8FF"> 3</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">/* USART Control and Status Register 0 C */</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> UCSR0C</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">C2</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#6A737D">// Bit 7/6 - USART Mode Select 0 n [UMSEL0n]</span></span>
+<span class="line"><span style="color:#6A737D">//    00 for asynch</span></span>
+<span class="line"><span style="color:#6A737D">// bit 5/4 USART Partiy mode 0 n [UPM0n]</span></span>
+<span class="line"><span style="color:#6A737D">//    00 for disabled</span></span>
+<span class="line"><span style="color:#6A737D">// bit 3 - USART Stop bit Select 0 [USBS0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 2 - USART character size/data order [UCSZ01/UDORD0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 1 - USART character size/clock phase [UCSZ00/UCPHA0]</span></span>
+<span class="line"><span style="color:#6A737D">// bit 0 - Clock Polarity [UCPOL0]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">/* USART Baud Rate 0 Register Low */</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> UBRR0L</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">C4</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#6A737D">/* USART Baud Rate 0 Register High */</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> UBRR0H</span><span style="color:#E1E4E8"> ((</span><span style="color:#F97583">*</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">volatile</span><span style="color:#F97583"> unsigned</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8">)</span><span style="color:#F97583">0x</span><span style="color:#79B8FF">C5</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">/*</span></span>
+<span class="line"><span style="color:#6A737D"> * Baud rate calculation</span></span>
+<span class="line"><span style="color:#6A737D"> * (cpu_frequency / (desired_baudrate * 16UL)) - 1</span></span>
+<span class="line"><span style="color:#6A737D"> */</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> F_CPU</span><span style="color:#79B8FF"> 16000000</span><span style="color:#F97583">UL</span></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> USART_BAUD_RATE</span><span style="color:#79B8FF"> 57600</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">#define</span><span style="color:#B392F0"> BAUD_PRESCALAR</span><span style="color:#E1E4E8"> (((F_CPU </span><span style="color:#F97583">/</span><span style="color:#E1E4E8"> (USART_BAUD_RATE </span><span style="color:#F97583">*</span><span style="color:#79B8FF"> 16</span><span style="color:#F97583">UL</span><span style="color:#E1E4E8">))) </span><span style="color:#F97583">-</span><span style="color:#79B8FF"> 1</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// NOTE: UBBR is a 12 bit register using 8 bits low and 4 bits high</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// file scope variable that acts as a 'private data member'</span></span>
+<span class="line"><span style="color:#F97583">static</span><span style="color:#F97583"> char*</span><span style="color:#E1E4E8"> message;</span></span>
+<span class="line"><span style="color:#6A737D">// can only be changed via 'public method' usart_set_message()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Sets the private member data message</span></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> usart_set_message</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">char*</span><span style="color:#FFAB70"> msg</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#E1E4E8">  message </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> msg;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// initializes the UART for use</span></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> usart_init</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6A737D">  // reset USDR0 to empty, emptying RX/TX buffer</span></span>
+<span class="line"><span style="color:#6A737D">  // set baud rate</span></span>
+<span class="line"><span style="color:#E1E4E8">  UBRR0H </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> BAUD_PRESCALAR </span><span style="color:#F97583">>></span><span style="color:#79B8FF"> 8</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">  UBRR0L </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> BAUD_PRESCALAR;</span></span>
+<span class="line"><span style="color:#6A737D">  // set frame format</span></span>
+<span class="line"><span style="color:#E1E4E8">  UCSR0C </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">0b</span><span style="color:#79B8FF">11</span><span style="color:#F97583">&#x3C;&#x3C;</span><span style="color:#79B8FF">1</span><span style="color:#E1E4E8">);</span><span style="color:#6A737D"> // set to 8 bit format</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// carriage return line feed</span></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> usart_crlf</span><span style="color:#E1E4E8">(){</span></span>
+<span class="line"><span style="color:#F97583">  while</span><span style="color:#E1E4E8"> ((UCSR0A </span><span style="color:#F97583">&#x26;</span><span style="color:#E1E4E8"> (</span><span style="color:#79B8FF">1</span><span style="color:#F97583">&#x3C;&#x3C;</span><span style="color:#E1E4E8">UDRE))</span><span style="color:#F97583">==</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  UDR0 </span><span style="color:#F97583">=</span><span style="color:#9ECBFF"> '</span><span style="color:#79B8FF">\r</span><span style="color:#9ECBFF">'</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#F97583">  while</span><span style="color:#E1E4E8"> ((UCSR0A </span><span style="color:#F97583">&#x26;</span><span style="color:#E1E4E8"> (</span><span style="color:#79B8FF">1</span><span style="color:#F97583">&#x3C;&#x3C;</span><span style="color:#E1E4E8">UDRE))</span><span style="color:#F97583">==</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">  UDR0 </span><span style="color:#F97583">=</span><span style="color:#9ECBFF"> '</span><span style="color:#79B8FF">\n</span><span style="color:#9ECBFF">'</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// print the message to the uart</span></span>
+<span class="line"><span style="color:#F97583">void</span><span style="color:#B392F0"> usart_print</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6A737D">  // clear transmit buffer</span></span>
+<span class="line"><span style="color:#E1E4E8">  UDR0 </span><span style="color:#F97583">=</span><span style="color:#F97583"> 0x</span><span style="color:#79B8FF">00</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#6A737D">  // enable transmit mode</span></span>
+<span class="line"><span style="color:#E1E4E8">  UCSR0B </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> (</span><span style="color:#79B8FF">1</span><span style="color:#F97583">&#x3C;&#x3C;</span><span style="color:#E1E4E8">TXEN0);</span></span>
+<span class="line"><span style="color:#F97583">  for</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">int</span><span style="color:#E1E4E8"> idx </span><span style="color:#F97583">=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; </span><span style="color:#FFAB70">message</span><span style="color:#E1E4E8">[idx] </span><span style="color:#F97583">!=</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">; idx</span><span style="color:#F97583">++</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    while</span><span style="color:#E1E4E8"> ((UCSR0A </span><span style="color:#F97583">&#x26;</span><span style="color:#E1E4E8"> (</span><span style="color:#79B8FF">1</span><span style="color:#F97583">&#x3C;&#x3C;</span><span style="color:#E1E4E8">UDRE))</span><span style="color:#F97583">==</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">    UDR0 </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> (</span><span style="color:#F97583">char</span><span style="color:#E1E4E8">) </span><span style="color:#FFAB70">message</span><span style="color:#E1E4E8">[idx];</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#B392F0">  usart_crlf</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"><span style="color:#6A737D">  // disable transmit mode</span></span>
+<span class="line"><span style="color:#E1E4E8">  UCSR0B </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> (</span><span style="color:#79B8FF">0</span><span style="color:#F97583"> &#x3C;&#x3C;</span><span style="color:#E1E4E8"> TXEN0);</span></span>
+<span class="line"><span style="color:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<p>Our USART is a lot more involved than our LED. We are spread across using multiple registers and appear to have a lot going on. I tried to comment to illistrate various aspects. At the start of the file, we define our registers. I added comments to cover the bits of significant registers that we are using and provided their name and in some instances a short description. Most of the bits in these registers, we will not have to use to accomplish our goals.</p>
+<p>So, looking at our datasheet for the AtMega 328P, we need to look at the section for the USART. First register to look at is <code>UDR0</code>. This register is our buffer. When we receive (which is not covered in this tutorial), the recieved information is placed in the buffer. That buffer is also the same as the transmit buffer, so it can only work one way at a time. When in transmit, we place an 8 bit value we want in that register to be transmitted to our USART interface. Important to notice, it is an 8-bit register (or 1 byte or the size of 1 char).</p>
+<p>Next register to look at is <code>UCSR0A</code>. This register, each bit represent something to the hardware, our concern for this is bit 5. This register will tell us when the <code>UDR0</code> register has been cleared after transmitting. When the bit in <code>UDRE0</code> is 0, our <code>UDR0</code> register is empty. When we transmit over the USART, when a value has been transmitted, it will zero out our <code>UDR0</code> register.</p>
+<p>In register <code>UCSR0B</code>, the bit we are concerned with is the <code>TXEN0</code> bit. In order to set the USART to transmit mode, that bit needs to be set to 1.</p>
+<p>For register <code>UCSR0C</code>, we are mostly concerned with bits 1 and 2. Here we are setting out bit size. We plan to transmit 8 bits. so we need to write a <code>1</code> to both of these locations. In the datasheet, there is a table that shows different configurations for this.</p>
+<p>Lastly for registers, <code>UBBR0</code> which I have as two seperate registers denoted as ending in <code>L</code> and <code>H</code> for their high and low portions. This register is a 12 bit register that sets the baud rate for the USART to operate at. The layout is the full 8 bits located in the lower portion of the register and the low 4-bits of the hight register. The high 4 bits of the high register are ignored by the microcontroller.</p>
+<p>Following the registers, I have some pre-compiler definitions used to calculate the BAUD prescalar. Going back to register <code>UBBR0</code>, we often call these prescalars. We can think of them as a nob that goes to different set points. We have our microcontroller clock rate (16 MHz) and our desired Baud rate, using the calculation in <code>BAUD_PRESCALAR</code>, we can calculate the proper prescaler we need to set register <code>UBBR0</code>.</p>
+<p>The first non-pre-compiler definition is defining a pointer to a character array called <code>message</code>. This is file-scope and is only visibile to the methods in <code>usart.c</code>. Main can not directly manipulate this variable. It can only do so by the method <code>usart_set_message</code>. This creates a sort of private data member that can be changed through a public method giving us an OOP like abstraction of encapsulation.</p>
+<p>Next, we have the <code>usart_init</code> method that initializes the settings for our usart by manipulating most of the bits I touched on above covering the registers we are using.</p>
+<p>In the <code>usart_print</code> method, we start off by zeroing out our <code>UDR0</code> register, we do not want to assuming it is zeroed. Then, we enable transmit mode by manipulating rh <code>TXEN0</code> bit. Next, we enter a for loop for the length of the message. During each iteration we check to see if <code>UDR0</code> is empty. If not, we loop and wait. Once it is, we load the next character into the <code>UDR0</code> register.  Once the full contents of the message have been sent out to the USART, we call on the <code>usart_crlf</code> which simply transmits our carriage return feed line to go to the next line of our USART interface then we disable transmit mode.</p>
+<h2 id="terminal-output">Terminal output</h2>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">USART-Intro</span><span style="color:#9ECBFF"> %</span><span style="color:#9ECBFF"> make</span></span>
+<span class="line"><span style="color:#B392F0">avr-gcc</span><span style="color:#79B8FF"> -Os</span><span style="color:#79B8FF"> -DF_CPU16000000UL</span><span style="color:#79B8FF"> -mmcu=atmega328p</span><span style="color:#79B8FF"> -c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> led.o</span><span style="color:#9ECBFF"> led.c</span></span>
+<span class="line"><span style="color:#B392F0">avr-gcc</span><span style="color:#79B8FF"> -Os</span><span style="color:#79B8FF"> -DF_CPU16000000UL</span><span style="color:#79B8FF"> -mmcu=atmega328p</span><span style="color:#79B8FF"> -c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> usart.o</span><span style="color:#9ECBFF"> usart.c</span></span>
+<span class="line"><span style="color:#B392F0">avr-gcc</span><span style="color:#79B8FF"> -Os</span><span style="color:#79B8FF"> -DF_CPU16000000UL</span><span style="color:#79B8FF"> -mmcu=atmega328p</span><span style="color:#79B8FF"> -c</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> main.o</span><span style="color:#9ECBFF"> main.c</span></span>
+<span class="line"><span style="color:#B392F0">avr-gcc</span><span style="color:#79B8FF"> -mmcu=atmega328p</span><span style="color:#79B8FF"> *</span><span style="color:#9ECBFF">.o</span><span style="color:#79B8FF"> -o</span><span style="color:#9ECBFF"> main</span></span>
+<span class="line"><span style="color:#B392F0">avr-objcopy</span><span style="color:#79B8FF"> -O</span><span style="color:#9ECBFF"> ihex</span><span style="color:#79B8FF"> -R</span><span style="color:#9ECBFF"> .eeprom</span><span style="color:#9ECBFF"> main</span><span style="color:#9ECBFF"> main.hex</span></span>
+<span class="line"><span style="color:#6A737D"># 57600</span></span>
+<span class="line"><span style="color:#B392F0">sudo</span><span style="color:#9ECBFF"> avrdude</span><span style="color:#79B8FF"> -F</span><span style="color:#79B8FF"> -V</span><span style="color:#79B8FF"> -c</span><span style="color:#9ECBFF"> arduino</span><span style="color:#79B8FF"> -p</span><span style="color:#9ECBFF"> ATMEGA328</span><span style="color:#79B8FF"> -P</span><span style="color:#9ECBFF"> /dev/tty.usbserial-1140</span><span style="color:#79B8FF"> -b</span><span style="color:#79B8FF"> 57600</span><span style="color:#79B8FF"> -U</span><span style="color:#9ECBFF"> flash:w:main.hex</span></span>
+<span class="line"><span style="color:#B392F0">Hello</span><span style="color:#9ECBFF"> World</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> AVR</span><span style="color:#9ECBFF"> device</span><span style="color:#9ECBFF"> initialized</span><span style="color:#9ECBFF"> and</span><span style="color:#9ECBFF"> ready</span><span style="color:#9ECBFF"> to</span><span style="color:#9ECBFF"> accept</span><span style="color:#9ECBFF"> instructions</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">Reading</span><span style="color:#F97583"> |</span><span style="color:#6A737D"> ################################################## | 100% 0.00s</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> Device</span><span style="color:#9ECBFF"> signature</span><span style="color:#9ECBFF"> =</span><span style="color:#79B8FF"> 0x1e950f</span><span style="color:#E1E4E8"> (probably </span><span style="color:#9ECBFF">m328p</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> Expected</span><span style="color:#9ECBFF"> signature</span><span style="color:#9ECBFF"> for</span><span style="color:#9ECBFF"> ATmega328</span><span style="color:#9ECBFF"> is</span><span style="color:#9ECBFF"> 1E</span><span style="color:#79B8FF"> 95</span><span style="color:#79B8FF"> 14</span></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> NOTE:</span><span style="color:#9ECBFF"> "flash"</span><span style="color:#9ECBFF"> memory</span><span style="color:#9ECBFF"> has</span><span style="color:#9ECBFF"> been</span><span style="color:#9ECBFF"> specified,</span><span style="color:#9ECBFF"> an</span><span style="color:#9ECBFF"> erase</span><span style="color:#9ECBFF"> cycle</span><span style="color:#9ECBFF"> will</span><span style="color:#9ECBFF"> be</span><span style="color:#9ECBFF"> performed</span></span>
+<span class="line"><span style="color:#B392F0">         To</span><span style="color:#9ECBFF"> disable</span><span style="color:#9ECBFF"> this</span><span style="color:#9ECBFF"> feature,</span><span style="color:#9ECBFF"> specify</span><span style="color:#9ECBFF"> the</span><span style="color:#79B8FF"> -D</span><span style="color:#9ECBFF"> option.</span></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> erasing</span><span style="color:#9ECBFF"> chip</span></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> reading</span><span style="color:#9ECBFF"> input</span><span style="color:#9ECBFF"> file</span><span style="color:#9ECBFF"> "main.hex"</span></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> input</span><span style="color:#9ECBFF"> file</span><span style="color:#9ECBFF"> main.hex</span><span style="color:#9ECBFF"> auto</span><span style="color:#9ECBFF"> detected</span><span style="color:#9ECBFF"> as</span><span style="color:#9ECBFF"> Intel</span><span style="color:#9ECBFF"> Hex</span></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> writing</span><span style="color:#9ECBFF"> flash</span><span style="color:#E1E4E8"> (418 </span><span style="color:#9ECBFF">bytes</span><span style="color:#E1E4E8">):</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">Writing</span><span style="color:#F97583"> |</span><span style="color:#6A737D"> ################################################## | 100% 0.16s</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#79B8FF"> 418</span><span style="color:#9ECBFF"> bytes</span><span style="color:#9ECBFF"> of</span><span style="color:#9ECBFF"> flash</span><span style="color:#9ECBFF"> written</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">avrdude:</span><span style="color:#9ECBFF"> safemode:</span><span style="color:#9ECBFF"> Fuses</span><span style="color:#9ECBFF"> OK</span><span style="color:#E1E4E8"> (E:00, </span><span style="color:#9ECBFF">H:00,</span><span style="color:#9ECBFF"> L:00</span><span style="color:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">avrdude</span><span style="color:#9ECBFF"> done.</span><span style="color:#9ECBFF">  Thank</span><span style="color:#9ECBFF"> you.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#B392F0">screen</span><span style="color:#9ECBFF"> /dev/tty.usbserial-1140</span><span style="color:#79B8FF"> 57600</span></span>
+<span class="line"><span style="color:#E1E4E8">[screen is terminating]</span></span>
+<span class="line"></span></code></pre>  </div> <footer data-astro-cid-sz7xmlte> <a href="https://www.github.com/martintc" data-astro-cid-yxtifmrq>github</a>  </footer>  </body> </html>

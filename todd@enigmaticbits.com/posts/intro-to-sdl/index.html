@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v4.11.3"><title>Intro to SDL</title><link rel="stylesheet" href="/_astro/about.ziih_YEc.css">
+<style>html{background-color:#2e3440;font-family:sans-serif;margin:20px}header{background-color:#434c5e;border-radius:25px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}footer{background-color:#434c5e;border-radius:25px}footer a:hover,footer a:focus{background-color:#81a1c1;border-radius:25px}body{margin:0 auto;width:100%;max-width:80ch;padding:1rem;line-height:1.5;color:#d8dee9;background-color:#4c566a;border-radius:25px}.body-content{padding:20px}.body-content ul{margin-left:30px}*{box-sizing:border-box}h1{margin:1rem 0;font-size:2.5rem;color:#d8dee9}ul{list-style:circle}.blog-links a{color:#ebcb8b}.blog-links li{list-style:circle}.hamburger{padding:10px 20px;cursor:pointer}.hamburger .line{display:block;width:30px;height:5px;margin-top:10px;margin-bottom:10px;background-color:#eceff4}.nav-links{width:100%;top:5rem;left:48px;background-color:#a09c96;display:none;margin:0;color:#d8dee9}.nav-links a{display:block;text-align:center;padding:10px 0;text-decoration:none;font-size:1.2rem;font-weight:700;text-transform:uppercase;background-color:#5e81ac;border-radius:25px}.nav-links a:hover,.nav-links a:focus{background-color:#81a1c1;border-radius:25px}.expanded{display:unset}@media screen and (min-width: 636px){.nav-links{margin-left:5em;display:block;position:static;width:auto;background:none}.nav-links a{display:inline-block;padding:15px 20px}.hamburger{display:none}}a[data-astro-cid-yxtifmrq]{padding:.5rem 1rem;color:#fff;background-color:#5e81ac;text-decoration:none;border-radius:25px}footer[data-astro-cid-sz7xmlte]{display:flex;gap:1rem;margin-top:2rem}
+</style><script type="module">document.querySelector(".hamburger").addEventListener("click",()=>{document.querySelector(".nav-links").classList.toggle("expanded")});
+</script></head> <body> <header> <nav> <div class="hamburger"> <span class="line"></span> <span class="line"></span> <span class="line"></span> </div> <div class="nav-links"> <a href="/">Home</a> <a href="/about/">About</a> <a href="/blog/">Blog</a> </div> </nav> </header> <h1>Intro to SDL</h1> <div class="body-content">  <p>Written by Todd</p> <p>Published on: 2022-08-25</p> <p>So, Recently I have taken to exploring development with SDL2 and OpenGL. SDL2 was fairly easy to get start with. However, OpenGL appears to be a whole other beast. My plan is play around with graphics rendering using C, SDL2, and OpenGL. A little bit of a roadbump is exploring tutorials that are rather up to date.</p>
+<p>On my fedora machine, the OpenGL version is 4.6, while it appears that most tutorials assume an older version of OpenGL version 3 or OpenGL version 2. Admittingly, I also have not messed aroung much with graphics programming. So this is an area I am for sure lacking in. Most of my experience is with using common, run of the mill frameworks such as Java swing, JavaFX, GTK, and Winforms. So for me, raw rendering graphics is a bit of a new field for me. Hopefully in this little post, I can post come content to point someone else looking into this in the right direction. As a warning, a lot of the OpenGL tutorials are also in C++. However, this is not so bad since it is fairly easy to ‘convert’ C++ into C code.</p>
+<p>To get started down this path to play with this, first step is to take a look at SDL. My ultimate goal is to mess around with the idea of creating a 2D platformer game using SDL and OpenGL.</p>
+<h1 id="sdl2">SDL2</h1>
+<p>First off the bat. It is helpful to pick up some library to couple with OpenGL such as SDL. Many others exists. There is, off the top of my head, GLFW and a few others. However, looking at SDL2, I liked how the documentation was laid out and how quick I found it to get up and running. SDL2 follows a basic format just to get something rendering. First, rendering SDL with the appropriate mode(s). Then creating a window and a renderer. This is atleast for working exclusively in SDL2 without coupling it with OpenGL.</p>
+<p>In order to initailize SDL, we can call the following function.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#B392F0">   SDL_Init</span><span style="color:#E1E4E8">(SDL_INIT_VIDEO);</span></span>
+<span class="line"></span></code></pre>
+<p>The above will initialize SDL in video mode, which is the least we need to render graphics. It is also important to note that we will need to include the SDL library. This will entail ensuring that we have the library installed. On Fedora, the following is needed to get that.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#E1E4E8">  sudo dnf isntall SDL2 SDL2</span><span style="color:#F97583">-</span><span style="color:#E1E4E8">devel</span></span>
+<span class="line"></span></code></pre>
+<p>This will place the libary in the appropriate place. Now we need a simple makefile.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">  all:</span></span>
+<span class="line"><span style="color:#B392F0">    gcc</span><span style="color:#79B8FF"> -c</span><span style="color:#9ECBFF"> main</span><span style="color:#9ECBFF"> ./src</span><span style="color:#79B8FF">*</span><span style="color:#9ECBFF">.c</span><span style="color:#79B8FF"> -lSDL2</span></span>
+<span class="line"></span></code></pre>
+<p>Then to make sure that the headers are included. So far, we have this for our initial SDL2 program.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">  #include</span><span style="color:#9ECBFF"> &#x3C;stdio.h></span></span>
+<span class="line"><span style="color:#F97583">  #include</span><span style="color:#9ECBFF"> &#x3C;SDL2/SDL.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  int</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">void</span><span style="color:#E1E4E8">) { </span></span>
+<span class="line"><span style="color:#B392F0">      SDL_Init</span><span style="color:#E1E4E8">(SDL_INIT_VIDEO);</span></span>
+<span class="line"><span style="color:#F97583">      return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span></code></pre>
+<p>Since we want to make sure that no errors have occured, we can see from the documentation that on <code>success</code>, the init function in SDL2 will return 0. In the event of an error, it will return a value less than zero. Also, a build in function can be taken advantage of to get details on the error. This is the <code>SDL_GetError</code> function that returns a <code>char*</code>.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">  #include</span><span style="color:#9ECBFF"> &#x3C;stdio.h></span></span>
+<span class="line"><span style="color:#F97583">  #include</span><span style="color:#9ECBFF"> &#x3C;SDL2/SDL.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  int</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">void</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    if</span><span style="color:#E1E4E8"> (</span><span style="color:#B392F0">SDL_Init</span><span style="color:#E1E4E8">(SDL_INIT_VIDEO) </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">      fprintf</span><span style="color:#E1E4E8">(stderr, </span><span style="color:#9ECBFF">"Error initializing SDL: </span><span style="color:#79B8FF">%s\n</span><span style="color:#9ECBFF">."</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">SDL_GetError</span><span style="color:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#F97583">      return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#F97583">    return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span></code></pre>
+<p>Next, creating a window.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#E1E4E8">  SDL_Window </span><span style="color:#F97583">*</span><span style="color:#E1E4E8">window </span><span style="color:#F97583">=</span><span style="color:#B392F0"> SDL_CreateWindow</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#9ECBFF">    "A title"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">    SDL_WINDOWPOS_UNDEFINED,</span></span>
+<span class="line"><span style="color:#E1E4E8">    SDL_WINDOWPOS_UNDEFINED,</span></span>
+<span class="line"><span style="color:#79B8FF">    800</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">    600</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">    0</span></span>
+<span class="line"><span style="color:#E1E4E8">  );</span></span>
+<span class="line"></span></code></pre>
+<p>The above code will create a window in SDL. It takes a variety of arguments. The first being some <code>char*</code> to represent the title of the window. The next two arguments are coordinated along the X and Y of a starting position for the window. Here, I don’t really care where the window appears, so I pass in <code>SDL_WINDOWPOS_UNDEFINED</code>. The next two arguments are the width and height of the created window. Lastly, this argument is for setting various features. I don’t really need any, so I just pass 0. However, when it comes to using OpenGL, a flag will need to be passed in there. Also, multiple flags can be passed by <code>ORing</code> them.</p>
+<p>Next is initializing the renderer.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#E1E4E8">  SDL_Renderer </span><span style="color:#F97583">*</span><span style="color:#E1E4E8">renderer </span><span style="color:#F97583">=</span><span style="color:#B392F0"> SDL_CreatRenderer</span><span style="color:#E1E4E8">(window);</span></span>
+<span class="line"><span style="color:#E1E4E8">```c</span></span>
+<span class="line"><span style="color:#E1E4E8">Creating the renderer is fairly easy. Just pass in the window object at initialization.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">One thing we are going to want to go is some error handling so that way </span><span style="color:#F97583">if</span><span style="color:#E1E4E8"> the program crashes, we know where it took place. After initializing either the renderer or the window, we can add in the following code, replacing the component being checked.</span></span>
+<span class="line"><span style="color:#E1E4E8">```c</span></span>
+<span class="line"><span style="color:#F97583">  if</span><span style="color:#E1E4E8"> (window </span><span style="color:#F97583">==</span><span style="color:#79B8FF"> NULL</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">     fprintf</span><span style="color:#E1E4E8">(strderr, </span><span style="color:#9ECBFF">"Error initializing SDL Window: </span><span style="color:#79B8FF">%s\n</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">SDL_GetError</span><span style="color:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#F97583">     return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span></code></pre>
+<p>All in all, the source code looks like so.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#F97583">  #include</span><span style="color:#9ECBFF"> &#x3C;std.io.h></span></span>
+<span class="line"><span style="color:#F97583">  #include</span><span style="color:#9ECBFF"> &#x3C;SDL2/SDL.h></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">  int</span><span style="color:#B392F0"> main</span><span style="color:#E1E4E8">(</span><span style="color:#F97583">void</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#F97583">    if</span><span style="color:#E1E4E8"> (</span><span style="color:#B392F0">SDL_Init</span><span style="color:#E1E4E8">(SDL_INIT_VIDEO) </span><span style="color:#F97583">&#x3C;</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">      fprintf</span><span style="color:#E1E4E8">(stderr, </span><span style="color:#9ECBFF">"Error initializing SDL: </span><span style="color:#79B8FF">%s\n</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">SDL_GetError</span><span style="color:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#F97583">      return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">    SDL_Window </span><span style="color:#F97583">*</span><span style="color:#E1E4E8">window </span><span style="color:#F97583">=</span><span style="color:#B392F0"> SDL_CreateWindow</span><span style="color:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#9ECBFF">      "My Title"</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E1E4E8">      SDL_WINDOWPOS_UNDEFINED,</span></span>
+<span class="line"><span style="color:#E1E4E8">      SDL_WINDOWPOS_UNDEFINED,</span></span>
+<span class="line"><span style="color:#79B8FF">      800</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">      600</span><span style="color:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#79B8FF">      0</span></span>
+<span class="line"><span style="color:#E1E4E8">    );</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    if</span><span style="color:#E1E4E8"> (window </span><span style="color:#F97583">==</span><span style="color:#79B8FF"> NULL</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">      fprintf</span><span style="color:#E1E4E8">(stderr, </span><span style="color:#9ECBFF">"Eror initializing SDL Window: </span><span style="color:#79B8FF">%s\n</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">SDL_GetError</span><span style="color:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#F97583">      return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">    SDL_Renderer  </span><span style="color:#F97583">*</span><span style="color:#E1E4E8">renderer </span><span style="color:#F97583">=</span><span style="color:#B392F0"> SDl_CreateRenderer</span><span style="color:#E1E4E8">(window);</span></span>
+<span class="line"><span style="color:#F97583">    if</span><span style="color:#E1E4E8"> (renderer </span><span style="color:#F97583">==</span><span style="color:#79B8FF"> NULL</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">      fprintf</span><span style="color:#E1E4E8">(stderr, </span><span style="color:#9ECBFF">"Error initializing SDL Renderer: </span><span style="color:#79B8FF">%s\n</span><span style="color:#9ECBFF">"</span><span style="color:#E1E4E8">, </span><span style="color:#B392F0">SDL_GetError</span><span style="color:#E1E4E8">());</span></span>
+<span class="line"><span style="color:#F97583">      return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">    }</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#F97583">    return</span><span style="color:#79B8FF"> 0</span><span style="color:#E1E4E8">;</span></span>
+<span class="line"><span style="color:#E1E4E8">  }</span></span>
+<span class="line"></span></code></pre>
+<p>Something else we will want to do is to make sure we clean out our resources.  Before the final <code>return 0</code>, we can use SDL’s methods to clean up, by placing these lines.</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="c"><code><span class="line"><span style="color:#B392F0">  SDL_DestroyRenderer</span><span style="color:#E1E4E8">(renderer);</span></span>
+<span class="line"><span style="color:#B392F0">  SDL_DestroyWindow</span><span style="color:#E1E4E8">(window);</span></span>
+<span class="line"><span style="color:#B392F0">  SDL_Quit</span><span style="color:#E1E4E8">();</span></span>
+<span class="line"></span></code></pre>  </div> <footer data-astro-cid-sz7xmlte> <a href="https://www.github.com/martintc" data-astro-cid-yxtifmrq>github</a>  </footer>  </body> </html>

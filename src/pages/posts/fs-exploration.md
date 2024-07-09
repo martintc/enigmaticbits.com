@@ -21,11 +21,11 @@ A lofty goal, since that is how I like to start. I really do like punishing myse
 
 So, before I get knee deep in the weed, I need a starting place, which is refreshing myself. For this I have cracked open my copy of *"Modern Operating Systems"* By **Andrew Tanenbaum**. While the copy that I have is the third edition, the information in it is still plenty valid since many concepts in filesystems and operating systems have remained the same or similar with just improvements overtime. 
 
-## inode
+# inode
 
 One of the most fundamental structures of a file system is the *inode*. This contains various information about a file. The term *inode* is short for **index node**. This is what we would call the *metadata* of a file. Some examples of fields would be time stamps (last modified), block cmaps, size, filesystem version, checksum, and more. The ext4fs is fairly large. The *inode* for a file also tends to be fixed size. 
 
-## superblock
+# superblock
 
 The *superblock* is like an *inode* for the filesystem as a whole. *Superblocks* are the *metadata* to the filesystem. This will often include a magic number to be able to identify the filesystem. If you are unfamiliar with the term *magic number*, here is an example you may be familiar with. Imagine you are opening an image. Well, how does your computer know it is an image? Better yet, how does your computer even know what kind of image it is? Afterall, there are tons of formats for images; jpeg, bmp, ppm, tiff, etc. As per the Portable Pixmap Format (PPM) standards, if there is a P3 located at a certain offset of the file, then we can be sure it is a ppm file. For PPM, this will be the first two bytes of the file. Another example of an image if the bmp format. If there is an ascii "BM" in the first two bytes, then we can safely assume it is a bmp file if we are looking at images. 
 
@@ -37,19 +37,19 @@ The simplest way to think of a file system is continguous boxes we can place thi
 
 There are a few operations a filesystem must be able to do in order to be useful. These are fairly simple and straight forward if we want to keep it basic. A filesystem must be able to read and write.
 
-## Write
+# Write
 
 First thing we want a filesystem to be able to do is to write. Afterall, we have filesystems to keep information around for longer than lifecycle of the machine. The lifecycle being between power on and power off. We use filesystems for this long term data store. So, the first thing we should be able to do is write information to file system. We do this by filling in one of those 20 blocks above. If we have 2048 bytes of information, we can do some quick math to see how many blocks we need to use. 2048 / 1024 = 2. If this is the first file written, we will write them in box[0] and box[1] (we are programmers, so like everything zero-indexed). Now we have a file we want to write that is 800 bytes. So we write this information into box[2]. Now, we want to write another file that is 500 bytes, so we write that into box[3]. All of the "free space" that exists in block 2 is reserved, so we have to use the next entirely free box. There are some problems that will arise here, but we will leave that for future Todd. As for writing the files, we would just write the bytes sequentially to the disk.
 
-## Read
+# Read
 
 Now that information is written, we want to be able to read. Afterall, what good is writing information to a disk if we can't read it? Otherwise, we might as well just write it to `/dev/null.` This is where those *inodes* come into play. A basic *inode* for a basic filesystem will contain two fields of importance, a starting offset and the number of blocks. Taking our above writes into consideration, if the first file we wrote is kitties.txt, we would go to the kitties.txt *inode* and see that is has an offset of 0. It is at the beginning of the filsystem. We would see that is also has 2 blocks, so we know box[0:1] are this file. In order to get the 2nd file, we would see in the *inode* that it's starting offset is 2, with a number of blocks as 1. If we wrote a new file with a size of 3000 bytes, we would know that we need 3 blocks and they would be written in box[4:6]. To retrieve this file, we would see in the *inode* that the starting offset is 4 with a number of 3 blocks.
 
-## Delete
+# Delete
 
 Lastly, a function that every filesystem should have implemented to call itself a filesystem is a delete function. For this, we simple free up the blocks to be used again. If we are deleting the first file, we simple removed the information from box[0:1] and mark it ready for use. 
 
-## conclusion for operations
+# conclusion for operations
 
 These are the two most important functions of an operating system to implement. Of course many more exist, but for brevity and just initial exploration, these are two we will focus on initially.
 
@@ -57,13 +57,13 @@ These are the two most important functions of an operating system to implement. 
 
 As mentioned, there is a problem we left for future Todd in the implementation section to be solved.
 
-## Fragmentation
+# Fragmentation
 
 The first problem is fragmentation. Suppose we delete the 2nd file that takes up spaces box[2]. Box[2] is not free for use. Now imagine the rest of the filesystem is taken up, or most of it. Let us say all of the boxes from box[0:1] and box[3:18]. So we now have boxes 2 and 19 open to write. Suppose we want to write a new file to the system with 1618 bytes. So it needs two boxes. We no longer have contiguous holes, so we have two possible solutions here. The first is to defragment our filesystem by rewriting data such that we now have two contiguous boxes. We can do this by rewriting all the data in box[3:18] to box[2:17]. The trade off is, this can be an expensive operation. Before we can write, we need to read in all the information in box[3:18] and rewrite the data into box[2:17]. Then we can finally write the two blocks work of data into box[18:19].
 
 The other possible solution is to throw out the requirement for contiguous blocks. We can change the structure of the operating system were we keep a map or a tree like structure to keep tabs on which boxes belong to which file. In our *inode* we can have a reference pointed to box[2] for the first block in the file then another reference to box[19]. So when we go to read, we know to start reading at box[2] and to also read from box[19].
 
-## Trade offs with fragmentation
+# Trade offs with fragmentation
 
 So we have saw two different possible solutions for an extremely crude filesystem. The filesystem can either group things together to keep blocks contiguous or it can use some structure that allows for any block to be used, however there are some tradeoffs to consider.
 

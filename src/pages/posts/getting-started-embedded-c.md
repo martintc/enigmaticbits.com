@@ -7,7 +7,7 @@ pubDate: 2022-09-27
 
 # Introduction to Embedded C with the AtMega328P
 
-## Goal
+# Goal
 
 By the end of this tutorial, you will be able to compile a binary written for the avr instruction set targeting the AtMega328P microcontroller on an Arduino Nano or Arduino Uno R3 form factor.
 

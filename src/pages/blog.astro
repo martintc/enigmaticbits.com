@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 const allPosts = await Astro.glob('./posts/*.md');
+// allPosts.sort((a, b) => Date.parse(a.frontmatter.date) - Date.parse(b.frontmatter.date));
 const pageTitle = "Blog Posts";
 ---
 

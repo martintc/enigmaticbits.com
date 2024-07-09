@@ -55,7 +55,29 @@ html {
   h1 {
     margin: 1rem 0;
     font-size: 2.5rem;
-    color: #d8dee9;
+    clor: #d8dee9;
+  }
+
+  h2 {
+    margin: 1rem 0;
+    font-size: 2.0rem;
+    color: #d8dee9; 
+  }
+
+  h3 {
+    margin: 1rem 0;
+    font-size: 1.5rem;
+    color: #d8dee9; 
+  }
+
+  p {
+    display: block;
+    white-space: pre-line;
+  }
+
+  p:before {
+    content: "\a ";
+    white-space: pre;
   }
 
   ul {

@@ -1,6 +1,5 @@
 ---
 import { formatDate } from '@/utils/data.util';
-import Tags from './Tags.astro';
 interface Props {
 	post: any;
 }
@@ -31,7 +30,6 @@ const { post } = Astro.props;
 
 				<p class="pb-4 text-lg font-bold">{post.frontmatter.title}</p>
 
-				<Tags tags={post.frontmatter.tags} />
 				<p class="line-clamp-6 pt-4">{post.frontmatter.excerpt}</p>
 			</div>
 			<p class="pt-4 underline">read more →</p>

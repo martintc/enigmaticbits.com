@@ -100,7 +100,7 @@ class Comtrya < Formula
 end
 ```
 
-Above is the formula that is now in homeware-core. As mentioned, we can just trust the maker and cargo to do the right thing. Defining rust as a build dependency pulls down all the rust tooling, including cargo, to build the package. Then building the package is as simple as invoking cargo to install.
+Above is the formula that is now in homebrew-core. As mentioned, we can just trust the maker and cargo to do the right thing. Defining rust as a build dependency pulls down all the rust tooling, including cargo, to build the package. Then building the package is as simple as invoking cargo to install.
 
 One area I had an issue with that referencing ripgrep wasn’t much of a help with is how to build Comtrya for homebrew with it having workspaces and how the workspace are set up. The binary application is the app. There is also a lib that is built for the library crate and jsonschema crate. I did have to tell cargo to build specifically the app to successfully compile Comtrya with homebrew from source. From there, Homebrew's tooling takes care of most of it, including placing the binary in the appropriate place on each system. Since it is built from source, this package should technically work on any platform that homebrew supports.
 
